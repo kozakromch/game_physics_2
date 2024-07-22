@@ -1,5 +1,8 @@
+{{$path := .Get "path"}}
+{{$res := resources.Get $path}}
+
 <p></p>
-<div class="mx-auto clear-both rounded overflow-hidden border" style="max-width: 500px; max-height: 280px;">
-    <img loading="lazy" src="{{site.baseurl}}/assets/pictures/{{path}}" class="rounded mx-auto d-block" alt="">
+<div class="hx-mx-auto hx-clear-both " style="max-width: 500px; max-height: 280px;">
+    <img loading="lazy" src={{ $res.RelPermalink }} class="rounded mx-auto d-block" alt="">
 </div>
 <p></p>

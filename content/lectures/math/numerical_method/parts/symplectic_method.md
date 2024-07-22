@@ -21,7 +21,7 @@ draft: true
 Т. е если взять несколько точек в фазовом пространстве, и посмотреть как они двигаются, то они будут двигаться так, что объемы будут сохраняться. Вот здесь например 4 точки с разными начальными условиями в системе с пружинкой и они двигаются по фазовым траекториям.
 Мы как будто следим одновременно за 4 пружинками и рисуем их графики.
 
-{{% include_sketch path="numerical_method/sketch/analitical_phase_spring.js" base_name="analitical_phase_spring" %}}
+{{< include_sketch path="numerical_method/sketch/analitical_phase_spring.js" base_name="analitical_phase_spring" >}}
 
 И если мы посмотрим на объем который они занимают, то он будет сохраняться.
 Об этом и говорит теорема Лиувиля (ну она говорит гораздо больше и умнее, но нам нужно только вот этот момент).
@@ -36,8 +36,8 @@ draft: true
 
 Давайте для примера посмотрим что происходит с фазовым объемом для явного и неявного метода в пружинке
 
-{{% include_sketch path="numerical_method/sketch/forward_euler_phase_spring.js" base_name="forward_euler_phase_spring" %}}
-{{% include_sketch path="numerical_method/sketch/backward_euler_phase_spring.js" base_name="backward_euler_phase_spring" %}}
+{{< include_sketch path="numerical_method/sketch/forward_euler_phase_spring.js" base_name="forward_euler_phase_spring" >}}
+{{< include_sketch path="numerical_method/sketch/backward_euler_phase_spring.js" base_name="backward_euler_phase_spring" >}}
 
 Ну в принципе достаточно ожидаемые результаты. У явного метода росла энергия и здесь видно что и объем растет. У неявного наоборот все уменьшается.
 
@@ -55,12 +55,14 @@ draft: true
 А какие свойства мы получим если одно уравнение будем решать явно, а другое неявно?
 
 Наиболее популярная вариация этого метода -- это метод полуявного Эйлера.
+$$
 \begin{equation}
 \begin{split}
 &v_{k+1} = v_k + f(x_k, v_{k+1})\Delta t\\
 &x_{k+1} = x_k + g(x_k, v_{k+1})
 \end{split}
 \end{equation}
+$$
 Собственно он полуявный (полунеявный) тк в общем виде численная схема для расчета скорости неявная, а схема координаты явная.
 Для того чтобы не иметь дело с неявным методом обычно полуявный метод рассматривают для систем в котором скорость зависит только от координаты.
 Т.е. $f(x, v) = f(x)$. На самом деле это не совсем так, тк простой демпинг вида $d(v) = -d*v $
@@ -69,38 +71,42 @@ draft: true
 Обычно считают что $g(x, v) = v$. Т.е позиция зависит только от скорости.
 
 Тогда итоговая система выглядит так:
+$$
 \begin{equation}
 \begin{split}
 &\dot{v} = f(x) + g(v),\\
 &\dot{x} = v
 \end{split}
 \end{equation}
+$$
 И для такой системы очень удобно использовать полуявный метод Эйлера.
 
+$$
 \begin{equation}
 \begin{split}
 &v_{k+1} = v_k + f(x_k)\Delta t,\\
 &x_{k+1} = x_k + v_{k+1}\Delta t
 \end{split}
 \end{equation}
+$$
 
 Мы получаем очень простое выражение для скорости на следующем шаге и для позиций.
 
 Давайте на примерах. Вот что будет если просимулировать пружинку с помощью полуявного метода.
 
-{{% include_sketch path="numerical_method/sketch/symplectic_euler_spring.js" base_name="symplectic_euler_spring" %}}
+{{< include_sketch path="numerical_method/sketch/symplectic_euler_spring.js" base_name="symplectic_euler_spring" >}}
 Пружинка получилась супер стабильная. Энергия осцилирует, но всегда возращается обратно и это очень круто. Потенциально мы можем симулировать такие системы вечно.
 Если посмотреть на фазовое пространство, то там тоже все хорошо. Объем сохраняется и это очень круто.
 Есть ошибка, но она не накапливается. А возвращается обратно.
-{{% include_sketch path="numerical_method/sketch/symplectic_euler_phase_spring.js" base_name="symplectic_euler_phase_spring" %}}
+{{< include_sketch path="numerical_method/sketch/symplectic_euler_phase_spring.js" base_name="symplectic_euler_phase_spring" >}}
 
 Вот еще пример того что сохранения фазового объема не сохраняет энергию.
 
-{{% include_sketch path="numerical_method/sketch/symplectic_euler_canon.js" base_name="symplectic_euler_canon" %}}
+{{< include_sketch path="numerical_method/sketch/symplectic_euler_canon.js" base_name="symplectic_euler_canon" >}}
 
 Поскольку координата и скорость постоянно меняются, то для того чтобы показавать фазовое пространство я отцентрировал его в середине аналитического решения.
 
-{{% include_sketch path="numerical_method/sketch/symplectic_euler_phase_canon.js" base_name="symplectic_euler_phase_canon" %}}
+{{< include_sketch path="numerical_method/sketch/symplectic_euler_phase_canon.js" base_name="symplectic_euler_phase_canon" >}}
 
 Объем сохраняется, но энергия падает тк появляется ошибка в скорости и позиции которые накапливаются со временем.
 Тк решение не периодическое у нас нет шанса сбалансировать ошибку.
@@ -117,7 +123,7 @@ draft: true
 
 Должно выполняться условие $(\Delta t * w) < 2$ где $w$ -- частота осцилляции. Если мы хотим визуализировать такие осциляции мы в любом случае должны требовать чтобы $\Delta t << w$.  Тк иначе мы просто не увидим этих колебаний.
 
-{% include /templates/image.html path='/numerical_method/stable_zone_symplectic.excalidraw.png' %}
+{{< image path='/numerical_method/stable_zone_symplectic.excalidraw.png' >}}
 
 </div>
 
@@ -189,9 +195,9 @@ https://www.gamedev.net/forums/topic/374930-thoughts-on-velocity-verlet/?page=2#
 
 Вот так выглядит более популярная модификация метода, которая позволяет получить скорость в явном виде. Здесь мы считаем что тело движется равноускоренно на момент времени $\Delta t$. Это достаточно сильно усложняет интегрирование вращения, но для простых систем такой метод работает хорошо.
 
-{{% include_sketch path="numerical_method/sketch/verlet_spring.js" base_name="verlet_spring" %}}
-{{% include_sketch path="numerical_method/sketch/verlet_phase_spring.js" base_name="verlet_phase_spring" %}}
-{{% include_sketch path="numerical_method/sketch/verlet_canon.js" base_name="verlet_canon" %}}
-{{% include_sketch path="numerical_method/sketch/verlet_phase_canon.js" base_name="verlet_phase_canon" %}}
+{{< include_sketch path="numerical_method/sketch/verlet_spring.js" base_name="verlet_spring" >}}
+{{< include_sketch path="numerical_method/sketch/verlet_phase_spring.js" base_name="verlet_phase_spring" >}}
+{{< include_sketch path="numerical_method/sketch/verlet_canon.js" base_name="verlet_canon" >}}
+{{< include_sketch path="numerical_method/sketch/verlet_phase_canon.js" base_name="verlet_phase_canon" >}}
 
 </div>

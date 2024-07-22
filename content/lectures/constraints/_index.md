@@ -5,17 +5,6 @@ type: docs
 prev: docs/first-page
 next: docs/folder/leaf
 ---
-<script src = "{{site.baseurl}}/assets/scripts/libs/p5.min.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/libs/p5.scribble.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/libs/math.js"></script>
-
-<script src = "{{site.baseurl}}/assets/scripts/common/base_vis.js"> </script>
-<script src = "{{site.baseurl}}/assets/scripts/common/sc_grid.js"> </script>
-<script src = "{{site.baseurl}}/assets/scripts/common/main_vis.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/common/color_scheme.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/common/common_vis.js"></script>
-
-<script src = "{{site.baseurl}}/assets/scripts/constraints/hard_ball.js"></script>
 
 ## Интро
 
@@ -33,11 +22,11 @@ next: docs/folder/leaf
 
 Если бы могли симулировать пружинку идеально точно, то никаких проблем бы не было. Вот у нас два тела столкнулись. Мы поставили там жесткую пружинку и тела разлетятся. Cобственно метод Penalty method и реализует идею, что все можно описать через пружинки.
 
-{% include /templates/image.html path='/constraints/penalty_method.excalidraw.png' %}
+{{< image path='/constraints/penalty_method.excalidraw.png' >}}
 
 Проблема в следующем. Если мы хотим жесткое ограничения, то нам нужно ставить очень жесткую пружинку. Если пружинка достаточно жесткая то практически любая схема развалится (кроме безусловно устойчивых, но и они тоже будут давать неадекватный результат) тк недостаточно точно симулируется пружинка. Если мы хотим чтобы симуляция не разваливалась, то нужно либо уменьшать шаг интегрирования, либо уменьшать жесткость пружинки. Но тогда ограничение становится мягким. В общем просто поиграйтесь и все поймете. 
 
-{{% include_sketch path="constraints/sketch/hard_ball_sketch.js" base_name="hard_ball_sketch" %}}
+{{< include_sketch path="constraints/sketch/hard_ball_sketch.js" base_name="hard_ball_sketch" >}}
 
 Это условно твердое тело которое состоит из материальных точек. Между всеми парами стоят пружинки с одинаковой жесткостью и дампингом.
 Это тело подвешено за верхнюю точку. Пока система мягкая численная схема хорошо справляется, но как только пытаешься сделать так чтобы твердое тело было твердым система разваливается. Поэтому если хотите использовать penalty method, то нужно либо использовать интегратор большей точности, либо уменьшать шаг по времени.
@@ -48,19 +37,22 @@ next: docs/folder/leaf
 
 В основном в физических движках встречаются ограничения которые зависят от координат. Например мы хотим чтобы объекты не проходили друг в друга. Естественно мы можем создавать произвольные ограничения, которые зависят от скоростей, ускорений и т.д. Но они встречаются гораздо реже на практике.
 Обычно все констрейны пытаются сформулировать в такой форме
+$$
 \begin{equation}
 \begin{aligned}
 C(p_1, p_2,\dots p_n) &= 0 \\
 \end{aligned}
 \end{equation}
+$$
 Есть какая-то функция от позиций и она должна быть равна нулю. Если равенство нарушается, значит ограничение нарушено и это нужно исправлять. 
 Например если мы хотим чтобы две материальные точки были на расстоянии $d$ друг от друга то уравнение будет следующим
-
+$$
 \begin{equation}
 \begin{aligned}
 C(p_1, p_2) &= |p_1 - p_2| - d = 0 \\
 \end{aligned}
 \end{equation}
+$$
 
 Иногда простым равенством не обойдешься. Ту же коллизию можно описать только через неравенство. 
 Но идейно такие неравенства решают точно так же как и равенства.
@@ -71,7 +63,7 @@ C(p_1, p_2) &= |p_1 - p_2| - d = 0 \\
 
 Для примера возьмем просто материальную точку, которая вращается вокруг подвеса. Для простоты скажем что длина пружины равна 1.
 
-{% include /templates/image.html path='/constraints/point_pendulum.excalidraw.png' %}
+{{< image  path='/constraints/point_pendulum.excalidraw.png' >}}
 
 Если ввести вектор $p$ равный положению точки, то уравнение будет следующим
 

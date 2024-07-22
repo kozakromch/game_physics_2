@@ -6,13 +6,15 @@ type: docs
 prev: docs/first-page
 next: docs/folder/leaf
 toc: true
-math: false
+math: true
 ---
 
-{{% include_md "parts/intro.md" %}}
-{{% include_md "parts/base_words.md" %}}
-{{% include_md "parts/model_problem.md" %}}
-<!-- {{% include_md "parts/numerical_euler.md" %}}
-{{% include_md "parts/symplectic_method.md" %}}
-{{% include_md "parts/RK.md" %}}
-{{% include_md "parts/summary.md" %}} -->
+{{< image path="images/numerical_method/phase_space_spring.excalidraw.png" >}}
+
+{{< include_md "parts/intro.md" >}}
+{{< include_md "parts/base_words.md" >}}
+{{< include_md "parts/model_problem.md" >}}
+
+
+{{< include_md "parts/RK.md" >}}
+{{< include_md "parts/summary.md" >}}

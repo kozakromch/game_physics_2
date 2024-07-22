@@ -25,7 +25,7 @@ sidebar:
 <div>
 Взяв адекватный интегратор и уравнения пружинки, можно уже делать крутые вещи. По типу таких:
 
-{{% include_sketch path="soft_constraints/sketch/soft_ball_sketch.js" base_name="soft_ball_sketch" %}}
+{{< include_sketch path="soft_constraints/sketch/soft_ball_sketch.js" base_name="soft_ball_sketch" >}}
 
 Но очень быстро появляется несколько проблем, которые портят жизнь. Во-первых, если пружинка слишком жесткая, то симуляция развалится. Во-вторых, настройка параметров пружинки -- это отдельное искусство.
 Поэтому в некоторых движках вместо вместо симуляции пружинки

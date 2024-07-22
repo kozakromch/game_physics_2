@@ -1,22 +1,26 @@
+{{ $p5_js := resources.Get "js/libs/p5.min.js" }}
+{{ $math_js := resources.Get "js/libs/math.js" }}
+
 {{ $base_name := .Get "base_name" }}
 {{ $rel_sketch_path := .Get "path" }}
 {{ $abs_sketch_path:=printf "%s%s" "js/" $rel_sketch_path}}
-{{$abs_sketch_path}}
 {{ $js := resources.Get $abs_sketch_path | js.Build | resources.Minify }}
-<b>SKETCH</b>
 
 <p></p>
-<div class="mx-auto" style="max-width: 500px;" id={{ (printf "%s%s" $base_name "_base_id" ) }}>
-    <div class="overflow-hidden border rounded">
-        <button type="button" class="btn btn-sm" id={{ (printf "%s%s" $base_name "_stop_button_id" ) }}>Start</button>
-        <button type="button" class="btn btn-sm" id={{ (printf "%s%s" $base_name "_reset_button_id" ) }}>Reset</button>
-        <canvas class="d-flex align-items-end" id={{printf "%s%s" $base_name "_canvas_id" }}></canvas>
+<div class="hx-mx-auto" style="max-width: 500px;" id={{ (printf "%s%s" $base_name "_base_id" ) }}>
+    <div class="hx-overflow-hidden hx-border hx-rounded">
+        <button type="button" class="hx-mr-2 hx-rounded-t hx-p-1 hx-font-medium" id={{ (printf "%s%s"
+            $base_name "_stop_button_id" ) }}>Start</button>
+        <button type="button" class="hx-mr-2 hx-rounded-t hx-p-1 hx-font-medium" id={{ (printf "%s%s"
+            $base_name "_reset_button_id" ) }}>Reset</button>
+        <canvas class="hx-flex align-items-end" id={{printf "%s%s" $base_name "_canvas_id" }} width="500px"
+            height="280px" style="width: 100%; height: auto;"></canvas>
         <div class="container">
             <div class="">
                 <div class="row" id={{printf "%s%s" $base_name "_add_space" }}></div>
             </div>
         </div>
-        <script async src="{{ $js.RelPermalink }}"></script>
+        <script defer src="{{ $js.RelPermalink }}"></script>
     </div>
 </div>
 <p></p>

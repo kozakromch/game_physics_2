@@ -21,9 +21,11 @@ draft: true
     <tr>
       <th scope="row"> Explicit Euler </th>
         <td>
+        $$
         \begin{equation}
             x_{k+1} = x_k + \dot{x}_k\Delta t
         \end{equation}
+        $$
         </td>
         <td>
             O($\Delta t$)
@@ -35,9 +37,11 @@ draft: true
     <tr>
       <th scope="row">Implicit Euler</th>
         <td>
+        $$
         \begin{equation}
             x_{k+1} = x_k + \dot{x}_{k+1}\Delta t
         \end{equation}
+        $$
         </td>
         <td>
             O($\Delta t$)
@@ -49,12 +53,14 @@ draft: true
     <tr>
       <th scope="row">Symplectic Euler</th>
       <td>
+      $$
         \begin{equation}
             \begin{split}
                 &v_{k+1} = v_k + a_k\Delta t\\
                 &x_{k+1} = x_k + v_{k+1}\Delta t
             \end{split}
         \end{equation}
+        $$
       </td>
       <td>
         O($\Delta t$)
@@ -66,9 +72,11 @@ draft: true
     <tr>
       <th scope="row"> Vanila Verlet</th>
         <td>
+        $$
             \begin{equation}
                 x_{k+1} = 2x_k - x_{k-1} + a_k\Delta t^2\\
             \end{equation}
+            $$
         </td>
         <td>
             O($\Delta t^3$)
@@ -80,12 +88,14 @@ draft: true
     <tr>
       <th scope="row"> Velocity Verlet </th>
         <td>
+            $$
             \begin{equation}
                 \begin{split}
                     &v_{k+1} = v_k + a_k\Delta t\\
                     &x_{k+1} = x_k + v_{k+1}\Delta t
                 \end{split}
             \end{equation}
+            $$
         </td>
         <td>
             O($\Delta t^2$)
