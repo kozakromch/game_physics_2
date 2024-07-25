@@ -1,6 +1,6 @@
-import color_scheme from './color_scheme.js';
+import color_scheme from './color_scheme.min.js';
 
-let energy_namespace = energy_namespace || {};
+let energy_namespace = {};
 energy_namespace.Energy = class {
   constructor() {
     this.min_energy = undefined;

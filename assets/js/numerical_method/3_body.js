@@ -1,8 +1,8 @@
-import color_scheme from 'js/common/color_scheme';
-import common_vis_namespace from 'js/common/common_vis';
+import color_scheme from '/js/common/color_scheme.min.js';
+import common_vis_namespace from '/js/common/common_vis.min.js';
 
 // 3 bodies problem solved by symplectic Euler
-let three_body_namespace = three_body_namespace || {};
+let three_body_namespace = {};
 
 three_body_namespace.Parameters = class {
   constructor() {

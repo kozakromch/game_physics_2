@@ -1,4 +1,5 @@
-import p5 from 'js/libs/p5.min.js';
+import p5 from '/js/libs/p5.min.js';
+import * as math from '/js/libs/math.min.js';
 // a P5 moire pattern.
 let s = (sk) => {
   let layers = [];

@@ -1,4 +1,4 @@
-let base_canvas_namespace = base_canvas_namespace || {};
+let base_canvas_namespace = {};
 base_canvas_namespace.BaseCanvasController = class {
   constructor(base_name) {
     this.is_paused = true;

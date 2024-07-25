@@ -1,6 +1,6 @@
-import energy_namespace from 'js/common/energy.js';
+import energy_namespace from '/js/common/energy.min.js';
 
-let canon_namespace = canon_namespace || {};
+let canon_namespace = {};
 canon_namespace.Parameters = class {
   constructor() {
     this.m = 100.;

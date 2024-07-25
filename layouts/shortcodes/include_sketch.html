@@ -1,10 +1,7 @@
-{{ $p5_js := resources.Get "js/libs/p5.min.js" }}
-{{ $math_js := resources.Get "js/libs/math.js" }}
-
 {{ $base_name := .Get "base_name" }}
 {{ $rel_sketch_path := .Get "path" }}
 {{ $abs_sketch_path:=printf "%s%s" "js/" $rel_sketch_path}}
-{{ $js := resources.Get $abs_sketch_path | js.Build | resources.Minify }}
+{{ $js := resources.Get $abs_sketch_path | resources.Minify }}
 
 <p></p>
 <div class="hx-mx-auto" style="max-width: 500px;" id={{ (printf "%s%s" $base_name "_base_id" ) }}>
@@ -20,7 +17,7 @@
                 <div class="row" id={{printf "%s%s" $base_name "_add_space" }}></div>
             </div>
         </div>
-        <script defer src="{{ $js.RelPermalink }}"></script>
+        <script defer src="{{ $js.RelPermalink }}" type="module"></script>
     </div>
 </div>
 <p></p>

@@ -1,9 +1,8 @@
-import color_scheme from 'js/common/color_scheme';
-import common_vis_namespace from 'js/common/common_vis';
-import energy_namespace from 'js/common/energy.js';
-import math from 'js/libs/math.js';
+import color_scheme from '/js/common/color_scheme.min.js';
+import common_vis_namespace from '/js/common/common_vis.min.js';
+import energy_namespace from '/js/common/energy.min.js';
 
-let spring_namespace = spring_namespace || {};
+let spring_namespace = {};
 spring_namespace.Parameters = class {
   constructor() {
     this.m = 1.;

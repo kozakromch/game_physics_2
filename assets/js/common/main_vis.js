@@ -1,9 +1,8 @@
-import base_canvas_namespace from './base_vis';
-import color_scheme from './color_scheme';
-import sc_grid_namespace from './sc_grid';
+import base_canvas_namespace from './base_vis.min.js';
+import color_scheme from './color_scheme.min.js';
+import sc_grid_namespace from './sc_grid.min.js';
 
-let main_visualizator_namespace = main_visualizator_namespace || {};
-
+let main_visualizator_namespace = {};
 main_visualizator_namespace.getMainVisualizator = function(
     custom_interface, with_axis = false) {
   var context = custom_interface;

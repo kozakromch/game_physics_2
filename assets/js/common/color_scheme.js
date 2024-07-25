@@ -1,4 +1,4 @@
-let color_scheme = color_scheme || {};
+let color_scheme = {};
 
 color_scheme.BACKGROUND = function(p5) {
   return p5.color(245, 245, 249, 255)
