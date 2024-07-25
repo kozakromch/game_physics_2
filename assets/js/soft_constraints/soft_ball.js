@@ -1,4 +1,6 @@
-var soft_ball_namespace = soft_ball_namespace || {};
+import color_scheme from '/js/common/color_scheme.min.js';
+
+var soft_ball_namespace =  {};
 soft_ball_namespace.Parameters = class {
   constructor() {
     this.m = 20.0;
@@ -41,7 +43,6 @@ soft_ball_namespace.VolumeConstraint = class {
 soft_ball_namespace.SoftBallSystem = class {
   constructor() {
     this.parameters = new soft_ball_namespace.Parameters();
-    this.initialyzeSystem();
   }
   reset() {
     this.initialyzeSystem();
@@ -204,8 +205,13 @@ soft_ball_namespace.SoftBallInterface = class {
   reset() {
     this.soft_ball.reset();
   }
-  setup(p5) {}
+  setup(p5) {
+    this.soft_ball.parameters.x_0 = p5.width / 2;
+    this.soft_ball.initialyzeSystem();
+  }
   calcSystem() {
     this.soft_ball.calcSystem();
   }
 };
+
+export default soft_ball_namespace;

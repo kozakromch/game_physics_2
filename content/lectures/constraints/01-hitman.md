@@ -43,7 +43,7 @@ $$
 
 $$
 \begin{equation}
-С(p_1, p_2) = |p_2 - p_1| - d = 0
+C(p_1, p_2) = |p_2 - p_1| - d = 0
 \end{equation}
 $$
 

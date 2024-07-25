@@ -1,4 +1,6 @@
-var hard_ball_namespace = hard_ball_namespace || {};
+import color_scheme from '/js/common/color_scheme.min.js';
+
+var hard_ball_namespace =  {};
 hard_ball_namespace.Parameters = class {
   constructor() {
     this.m = 3.0;
@@ -33,7 +35,7 @@ hard_ball_namespace.SpringConstraint = class {
 hard_ball_namespace.HardBallSystem = class {
   constructor() {
     this.parameters = new hard_ball_namespace.Parameters();
-    this.initialyzeSystem();
+
   }
   reset() {
     this.initialyzeSystem();
@@ -193,9 +195,9 @@ function createSlider(div, min, max) {
 }
 function createOutput(div) {
   let output = document.createElement('output');
-  output.setAttribute('class', 'align-middle');
+  // output.setAttribute('class', '');
   output.id = div.id + 'output';
-  output.innerHTML = '0';
+  output.innerHTML = '50.5';
   document.getElementById(div.id).appendChild(output);
   return output;
 }
@@ -210,16 +212,18 @@ hard_ball_namespace.HardBallInterface = class {
     this.hard_ball_vis.draw(p5, this.hard_ball, color_scheme.RED(p5));
   }
   setup(p5, base_name) {
+    this.hard_ball.parameters.x_0 = p5.width / 2;
+    this.hard_ball.initialyzeSystem();
     {
       let parent_name = base_name + '_add_space';
       let div_c_1 =
-          createDiv(parent_name, parent_name + '1', 'col-sm border-end');
+          createDiv(parent_name, parent_name + '1', 'col-sm');
       let div_r_1 = createDiv(div_c_1.id, div_c_1.id + '1', 'row');
       let div_m_0 =
-          createDiv(div_r_1.id, div_r_1.id + '0', 'col-1 align-middle');
+          createDiv(div_r_1.id, div_r_1.id + '0', 'col-1');
       div_m_0.innerHTML = 'K';
       let div_m_1 = createDiv(div_r_1.id, div_r_1.id + '1', 'col-8');
-      let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', 'col align-middle');
+      let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', '');
       this.slider1 = createSlider(div_m_1, 0, 50);
       this.output1 = createOutput(div_m_2);
     }
@@ -229,12 +233,12 @@ hard_ball_namespace.HardBallInterface = class {
     {
       let parent_name = base_name + '_add_space';
       let div_c_1 =
-          createDiv(parent_name, parent_name + '2', 'col-sm border-start');
+          createDiv(parent_name, parent_name + '2', 'col-sm');
       let div_r_1 = createDiv(div_c_1.id, div_c_1.id + '1', 'row');
       let div_m_0 =
-          createDiv(div_r_1.id, div_r_1.id + '0', 'col-1 align-middle');
+          createDiv(div_r_1.id, div_r_1.id + '0', 'col-1');
       let div_m_1 = createDiv(div_r_1.id, div_r_1.id + '1', 'col-8');
-      let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', 'col align-middle');
+      let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', '');
       this.slider2 = createSlider(div_m_1, 0, 5);
       this.output2 = createOutput(div_m_2);
       div_m_0.innerHTML = 'D';
@@ -250,3 +254,5 @@ hard_ball_namespace.HardBallInterface = class {
     this.hard_ball.calcSystem();
   }
 };
+
+export default hard_ball_namespace;

@@ -1,5 +1,0 @@
-{{ $p5_js := resources.Get "js/libs/p5.min.js" | resources.Minify }}
-{{ $math_js := resources.Get "js/libs/math.js" | resources.Minify }}
-
-<script defer src="{{ $p5_js.RelPermalink }}"   type ='module'></script>
-<script defer src="{{ $math_js.RelPermalink }}" type ='module'></script>

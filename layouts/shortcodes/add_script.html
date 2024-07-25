@@ -1,0 +1,3 @@
+{{ $script_path := .Get 0 }}
+{{ $script_js := resources.Get $script_path | resources.Minify }}
+<script defer src="{{ $script_js.RelPermalink }}" type ='module'></script>

@@ -7,22 +7,9 @@ next: docs/folder/leaf
 sidebar:
   open: true
 ---
-
-<script src = "{{site.baseurl}}/assets/scripts/libs/p5.min.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/libs/p5.scribble.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/libs/math.js"></script>
-
-<script src = "{{site.baseurl}}/assets/scripts/common/base_vis.js"> </script>
-<script src = "{{site.baseurl}}/assets/scripts/common/sc_grid.js"> </script>
-<script src = "{{site.baseurl}}/assets/scripts/common/main_vis.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/common/color_scheme.js"></script>
-<script src = "{{site.baseurl}}/assets/scripts/common/common_vis.js"></script>
-
-
-<script src = "{{site.baseurl}}/assets/scripts/soft_constraints/soft_ball.js"></script>
+{{< add_script "js/soft_constraints/soft_ball.js" >}}
 
 ## Мягкие ограничения (Soft Constraints)
-<div>
 Взяв адекватный интегратор и уравнения пружинки, можно уже делать крутые вещи. По типу таких:
 
 {{< include_sketch path="soft_constraints/sketch/soft_ball_sketch.js" base_name="soft_ball_sketch" >}}
@@ -33,8 +20,6 @@ sidebar:
 В этот раз я хочу рассказать о том как реализованы мягкие ограничения в Jolt, Box2D и ODE. 
 
 Для того чтобы упростить настройку пружинки нужно почти сразу переходить от настройки жесткости с дампингом на настройку частоты и доли критического дампинга.
-
-</div>
 
 
 ## Источники

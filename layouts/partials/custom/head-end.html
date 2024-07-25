@@ -1,3 +1,4 @@
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.0.3/math.min.js"></script>
 
 {{ $p5_scribble_js := resources.Get "js/libs/p5.scribble.js" | resources.Minify}}
@@ -20,13 +21,3 @@
 <script defer src="{{ $energy_js.RelPermalink }}" type ='module'></script>
 <script defer src="{{ $main_vis_js.RelPermalink }}" type ='module'></script>
 <script defer src="{{ $sc_grid_js.RelPermalink }}" type ='module'></script>
-
-
-{{ $3_body_js := resources.Get "js/numerical_method/3_body.js" | resources.Minify }}
-<script defer src="{{ $3_body_js.RelPermalink }}" type ='module'></script>
-
-{{ $canon_js := resources.Get "js/numerical_method/canon.js" | resources.Minify }}
-<script defer src="{{ $canon_js.RelPermalink }}" type ='module'></script>
-
-{{ $spring_js := resources.Get "js/numerical_method/spring.js" | resources.Minify }}
-<script defer src="{{ $spring_js.RelPermalink }}" type ='module'></script>

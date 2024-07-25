@@ -9,6 +9,10 @@ toc: true
 math: true
 ---
 
+{{< add_script "js/numerical_method/3_body.js" >}}
+{{< add_script "js/numerical_method/canon.js" >}}
+{{< add_script "js/numerical_method/spring.js" >}}
+
 
 
 ## Интро
