@@ -28,9 +28,7 @@ math: true
       <th scope="row"> Explicit Euler </th>
         <td>
         $$
-        \begin{equation}
-            x_{k+1} = x_k + \dot{x}_k\Delta t
-        \end{equation}
+        x_{k+1} = x_k + \dot{x}_k\Delta t
         $$
         </td>
         <td>
@@ -44,9 +42,7 @@ math: true
       <th scope="row">Implicit Euler</th>
         <td>
         $$
-        \begin{equation}
-            x_{k+1} = x_k + \dot{x}_{k+1}\Delta t
-        \end{equation}
+        x_{k+1} = x_k + \dot{x}_{k+1}\Delta t
         $$
         </td>
         <td>
@@ -60,12 +56,12 @@ math: true
       <th scope="row">Symplectic Euler</th>
       <td>
       $$
-        \begin{equation}
+        \begin{equation*}
             \begin{split}
-                &v_{k+1} = v_k + a_k\Delta t\\
+                &v_{k+1} = v_k + a_k\Delta t \\\
                 &x_{k+1} = x_k + v_{k+1}\Delta t
             \end{split}
-        \end{equation}
+        \end{equation*}
         $$
       </td>
       <td>
@@ -79,10 +75,8 @@ math: true
       <th scope="row"> Vanila Verlet</th>
         <td>
         $$
-            \begin{equation}
-                x_{k+1} = 2x_k - x_{k-1} + a_k\Delta t^2\\
-            \end{equation}
-            $$
+        x_{k+1} = 2x_k - x_{k-1} + a_k\Delta t^2\\
+        $$
         </td>
         <td>
             O($\Delta t^3$)
@@ -95,12 +89,12 @@ math: true
       <th scope="row"> Velocity Verlet </th>
         <td>
             $$
-            \begin{equation}
+            \begin{equation*}
                 \begin{split}
-                    &v_{k+1} = v_k + a_k\Delta t\\
+                    &v_{k+1} = v_k + a_k\Delta t\\\
                     &x_{k+1} = x_k + v_{k+1}\Delta t
                 \end{split}
-            \end{equation}
+            \end{equation*}
             $$
         </td>
         <td>

@@ -15,7 +15,7 @@ math: true
 если заменить в определении производной $\approx$ на $=$
 $$
 \begin{equation}
-    \dot{x} = \frac{dx}{dt} = \lim_{\Delta t\rightarrow 0} \frac{x(t + \Delta t) -x(t)}{\Delta t} \approx \frac{x(t + \Delta t) -x(t)}{\Delta t},
+\dot{x} = \frac{dx}{dt} = \lim_{\Delta t\rightarrow 0} \frac{x(t + \Delta t) -x(t)}{\Delta t} \approx \frac{x(t + \Delta t) -x(t)}{\Delta t},
 \end{equation}
 $$
 
@@ -49,8 +49,11 @@ $$
 Подставляя это в метод прямого Эйлера получим
 $$
 \begin{equation}
-z_{k+1} = z_k + A\cdot z_k\cdot\Delta t + G\cdot\Delta t = (I + A\cdot\Delta t)\cdot z_k + G\cdot\Delta t = F\cdot z_k + G\cdot\Delta t
-z_{k+1} = F\cdot z_k + G\cdot\Delta t
+\begin{split}
+&z_{k+1} = z_k + A\cdot z_k\cdot\Delta t + G\cdot\Delta t = \\\
+&= (I + A\cdot\Delta t)\cdot z_k + G\cdot\Delta t = F\cdot z_k + G\cdot\Delta t \\\
+&z_{k+1} = F\cdot z_k + G\cdot\Delta t
+\end{split}
 \end{equation}
 $$
 
@@ -75,8 +78,10 @@ $$
 Подставляя это в метод прямого Эйлера получим
 $$
 \begin{equation}
-z_{k+1} = z_k + A\cdot z_k\cdot\Delta t = (I + A\cdot\Delta t)\cdot z_k = F\cdot z_k\qquad
-z_{k+1} = F\cdot z_k
+\begin{split}
+&z_{k+1} = z_k + A\cdot z_k\cdot\Delta t = (I + A\cdot\Delta t)\cdot z_k = F\cdot z_k\qquad \\\
+&z_{k+1} = F\cdot z_k
+\end{split}
 \end{equation}
 $$
 
@@ -96,9 +101,9 @@ $$
 $$
 \begin{equation}
 \begin{split}
-&x_{1} = F \cdot x_0 \\
-&x_{2} = F \cdot x_1 = F^2 \cdot x_0 \\
-\ldots \\
+&x_{1} = F \cdot x_0 \\\
+&x_{2} = F \cdot x_1 = F^2 \cdot x_0 \\\
+&\ldots \\\
 &x_{k} = F^k \cdot x_0
 \end{split}
 \end{equation}
@@ -206,7 +211,11 @@ $$
 Подставляя это в метод обратного Эйлера получим
 $$
 \begin{equation}
-z_{k-1} = z_k - A\cdot z_k\cdot\Delta t - G\cdot\Delta t = (I - A\cdot\Delta t)\cdot z_k - G\cdot\Delta t = F\cdot z_k - G\cdot\Delta t
+\begin{split}
+z_{k-1} = z_k - A\cdot z_k\cdot\Delta t - G\cdot\Delta t = \\\
+= (I - A\cdot\Delta t)\cdot z_k - G\cdot\Delta t \\\
+z_{k-1} = F\cdot z_k - G\cdot\Delta t
+\end{split}
 \end{equation}
 $$
 
