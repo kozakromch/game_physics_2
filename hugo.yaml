@@ -49,3 +49,7 @@ params:
   editURL:
     enable: true
     base: "https://github.com/kozakromch/game_physics_2/"
+  
+  services:
+  googleAnalytics:
+    ID: "G-4F1H0J4FJ1"
