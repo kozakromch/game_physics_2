@@ -48,7 +48,7 @@ params:
 
   editURL:
     enable: true
-    base: "https://github.com/kozakromch/game_physics_2/"
+    base: "https://github.com/kozakromch/game_physics_2/tree/main/content"
   
   services:
   googleAnalytics:
