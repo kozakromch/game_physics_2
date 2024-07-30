@@ -1,4 +1,4 @@
-import Scribble from '/js/libs/p5.scribble.min.js';
+import Scribble from '../../js/libs/p5.scribble.min.js';
 
 import color_scheme from './color_scheme.min.js';
 

@@ -1,4 +1,4 @@
-import Scribble from '/js/libs/p5.scribble.min.js';
+import Scribble from '../../js/libs/p5.scribble.min.js';
 
 let common_vis_namespace = {};
 common_vis_namespace.drawAxis = function(p5, text_x, text_y) {
