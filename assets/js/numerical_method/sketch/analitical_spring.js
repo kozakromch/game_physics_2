@@ -1,8 +1,8 @@
-import color_scheme from '/js/common/color_scheme.min.js';
-import energy_namespace from '/js/common/energy.min.js';
-import main_visualizator_namespace from '/js/common/main_vis.min.js';
-import p5 from '/js/libs/p5.min.js';
-import spring_namespace from '/js/numerical_method/spring.min.js';
+import color_scheme from '../../../js/common/color_scheme.min.js';
+import energy_namespace from '../../../js/common/energy.min.js';
+import main_visualizator_namespace from '../../../js/common/main_vis.min.js';
+import p5 from '../../../js/libs/p5.min.js';
+import spring_namespace from '../../../js/numerical_method/spring.min.js';
 
 {
   class SpringInterfaceAnalitical {

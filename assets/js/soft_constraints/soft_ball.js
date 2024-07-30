@@ -1,4 +1,4 @@
-import color_scheme from '/js/common/color_scheme.min.js';
+import color_scheme from '../../js/common/color_scheme.min.js';
 
 var soft_ball_namespace =  {};
 soft_ball_namespace.Parameters = class {

@@ -1,5 +1,5 @@
-import color_scheme from '/js/common/color_scheme.min.js';
-import energy_namespace from '/js/common/energy.min.js';
+import color_scheme from '../../js/common/color_scheme.min.js';
+import energy_namespace from '../../js/common/energy.min.js';
 
 let canon_namespace = {};
 canon_namespace.Parameters = class {
