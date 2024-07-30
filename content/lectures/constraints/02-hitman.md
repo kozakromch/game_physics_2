@@ -1,10 +1,9 @@
 ---
-title: 1. Метод Hitman Codename 47
+title: 2. Метод Hitman Codename 47
 author: Роман Козак
 type: docs
-prev: docs/first-page
-next: docs/folder/leaf
 math: true
+toc: true
 sidebar:
   open: true
 ---
@@ -37,7 +36,7 @@ $$
 Сначала разберемся с релаксацией на простых примерах.
 Вот есть две точки, которые должны быть на расстоянии $d$ друг от друга.
 
-{{< image path="images/hitman/stretch.excalidraw.png" >}}
+{{< image path="images/constraints/hitman/stretch.excalidraw.png" >}}
 
 Ограничение на сохранение расстояния между двумя точками:
 
@@ -60,7 +59,7 @@ $$
 \end{equation}
 $$
 
-{{< image  path="images/hitman/stretch_relax.excalidraw.png" >}}
+{{< image  path="images/constraints/hitman/stretch_relax.excalidraw.png" >}}
 
 Для точек с разной массой можно каждую сместить на величину, обратно пропорциональную массе:
 $$
@@ -77,7 +76,7 @@ $$
 
 Теперь попробуем обобщить этот метод на случай, когда у нас несколько точек и несколько ограничений.
 Вот 4 материальные точки и 6 ограничений, некоторые растянуты, некоторые сжаты.
-{{< image  path="images/hitman/many_delta.excalidraw.png" >}}
+{{< image  path="images/constraints/hitman/many_delta.excalidraw.png" >}}
 
 Мы не умеем решать такую систему с несколькими точками, но нам это и не нужно. Оказывается если разрешать ограничения по одному несколько раз, то получается хороший результат.
 

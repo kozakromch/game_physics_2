@@ -1,9 +1,7 @@
 ---
-title: 2. XPBD
+title: 3. XPBD
 author: Роман Козак
 type: docs
-prev: docs/first-page
-next: docs/folder/leaf
 sidebar:
   open: true
 ---
