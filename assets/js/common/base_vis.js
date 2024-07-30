@@ -1,3 +1,4 @@
+
 let base_canvas_namespace = {};
 base_canvas_namespace.BaseCanvasController = class {
   constructor(base_name) {
@@ -8,7 +9,7 @@ base_canvas_namespace.BaseCanvasController = class {
     this.pauseText();
   }
   pauseText() {
-    this.pause_button.innerHTML = this.is_paused ? 'Start' : 'Pause';
+    this.pause_button.innerHTML = this.is_paused ? "Start"  : "Pause";
   }
   pauseSimulation() {
     this.is_paused = !this.is_paused;

@@ -3,8 +3,6 @@ title: 1. Численные методы
 author: Роман Козак
 credential: { Петров Степан }
 type: docs
-prev: 
-next: 
 toc: true
 math: true
 ---
