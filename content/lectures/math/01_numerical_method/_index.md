@@ -37,7 +37,6 @@ math: true
 Здесь я попробую рассказать о самых популярных и используемых методах численного интегрирования.
 
 
-
 ## Необходимые знания
 
 ### Фазовое пространство
@@ -46,8 +45,8 @@ math: true
 Формальное определение:
 
 > "Фазовое пространство -- это пространство, четной размерности, 
->координатами в котором являются обычные пространственные координаты (или обобщённые координаты) частиц системы и их импульсы"
-{: .blockquote}
+> координатами в котором являются обычные пространственные координаты (или обобщённые координаты) частиц системы и их импульсы"
+
 
 
 Нам же достаточно понимать малую часть от этого -- для одномерной системы, например пружинки которая может колебаться по одной оси, фазовое пространство -- это график, где на одной оси у нас координата, а на другой импульс и точка на этом графике -- это состояние системы.
@@ -77,50 +76,52 @@ math: true
 Тело массой $m$ вылетает из пушки с начальной скоростью $v_0$ под углом $\alpha$ к горизонту.
 {{<details title="Формальности" closed="true" >}}
 Тогда уравнение движения примет вид
+
 $$
-\begin{equation}
-    \begin{split}
-        &\ddot{x} = 0,\\
-        &\ddot{y} = -g,
-    \end{split}
-\end{equation}
+\begin{equation*}
+\begin{split}
+\ddot{x} = 0,\\\
+\ddot{y} = -g,
+\end{split}
+\end{equation*}
 $$
+
 где $g$ - ускорение свободного падения. Перепишем уравнение в виде
 $$
-\begin{equation}
-    \begin{split}
-        &\dot{x} = v_x,\\
-        &\dot{v_x} = 0,\\
-        &\dot{y} = v_y,\\
-        &\dot{v_y} = -g.
-    \end{split}
-\end{equation}
+\begin{equation*}
+\begin{split}
+&\dot{x} = v_x,\\\
+&\dot{v_x} = 0,\\\
+&\dot{y} = v_y,\\\
+&\dot{v_y} = -g.
+\end{split}
+\end{equation*}
 $$
 Если ввести вектор состояния $z$:
 $$
-\begin{equation}
+\begin{equation*}
     z =
-     \begin{bmatrix}     x \\     v_x \\     y \\     v_y \\     \end{bmatrix}
-\end{equation}
+     \begin{bmatrix}     x \\\     v_x \\\     y \\\     v_y \\\     \end{bmatrix}
+\end{equation*}
 $$
 и константный вектор $G$:
 $$
-\begin{equation}
-    G = \begin{bmatrix} 0 \\ 0 \\ 0\\ -g \end{bmatrix}
-\end{equation}
+\begin{equation*}
+    G = \begin{bmatrix} 0 \\\ 0 \\\ 0\\\ -g \end{bmatrix}
+\end{equation*}
 $$
 Тогда уравнение перепишем в виде
 $$
-\begin{equation}
+\begin{equation*}
     \dot{z} =
     \begin{bmatrix}
-        0 & 1 & 0 & 0 \\
-        0 & 0 & 0 & 0 \\
-        0 & 0 & 0 & 1 \\
-        0 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\\
+        0 & 0 & 0 & 0 \\\
+        0 & 0 & 0 & 1 \\\
+        0 & 0 & 0 & 0 \\\
     \end{bmatrix}
-    \cdot z  + \begin{bmatrix} 0 \\ 0 \\ 0\\ -g \end{bmatrix} = A \cdot z + G
-\end{equation}
+    \cdot z  + \begin{bmatrix} 0 \\\ 0 \\\ 0\\\ -g \end{bmatrix} = A \cdot z + G
+\end{equation*}
 $$
 {{< /details >}}
 
@@ -128,7 +129,7 @@ $$
 $$
 \begin{equation}
     \begin{split}
-        &x(t) = v_0 t \cos(\alpha) \\ 
+        &x(t) = v_0 t \cos(\alpha) \\\ 
         &y(t) = v_0 t \sin(\alpha) - \frac{1}{2}gt^2.
     \end{split}
 \end{equation}
@@ -144,38 +145,34 @@ $$
 {{< image  path="images/numerical_method/spring.excalidraw.png" >}}
 {{<details title="Формальности" closed="true" >}}
 $$
-\begin{equation}
-    \begin{split}
-        &\ddot{x} = -\frac{k}{m}x,\\
-    \end{split}
-\end{equation}
+\ddot{x} = -\frac{k}{m}x,\\
 $$
 Тогда уравнение движения примет вид
 $$
-\begin{equation}
+\begin{equation*}
     \begin{split}
-        &\dot{x} = v,\\
+        &\dot{x} = v,\\\
         &\dot{v} = -\frac{k}{m}x.
     \end{split}
-\end{equation}
+\end{equation*}
 $$
 Аналогично
 $$
-\begin{equation}
+\begin{equation*}
     z =
      \begin{bmatrix}     x \\     v \\     \end{bmatrix}
-\end{equation}
+\end{equation*}
 $$
 Тогда уравнение перепишем в виде
 $$
-\begin{equation}
+\begin{equation*}
     \dot{z} =
     \begin{bmatrix}
         0 & 1 \\
         -\frac{k}{m} & 0 \\
     \end{bmatrix}
     \cdot z = A \cdot z
-\end{equation}
+\end{equation*}
 $$
 {{< /details >}}
 

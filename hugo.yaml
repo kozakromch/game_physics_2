@@ -47,5 +47,5 @@ params:
     displayPoweredBy: false
 
   editURL:
-    enable: false
-    base: "https://github.com/kozakromch/hextra-starter-template/edit/main/content"
+    enable: true
+    base: "https://github.com/kozakromch/game_physics_2/"
