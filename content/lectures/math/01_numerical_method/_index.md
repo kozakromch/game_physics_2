@@ -135,7 +135,7 @@ $$
 Пружинка с коэффициентом жесткости $k$, массой $m$ и начальным смещением $x_0$  и начальной скоростью $v_0$.
 
 {{< image  path="images/numerical_method/spring.excalidraw.png" >}}
-{{<details title="Формальности" closed="true" >}}
+{{<details title="Аналитическое решение" closed="true" >}}
 $$
 \ddot{x} = -\frac{k}{m}x,\\
 $$
