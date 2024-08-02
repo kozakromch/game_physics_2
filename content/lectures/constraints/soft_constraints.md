@@ -1,5 +1,5 @@
 ---
-title: 4. Мягкие ограничения
+title: 5. Мягкие ограничения
 author: Роман Козак
 type: docs
 prev: docs/first-page
@@ -7,6 +7,7 @@ next: docs/folder/leaf
 sidebar:
   open: true
 ---
+
 {{< add_script "js/soft_constraints/soft_ball.js" >}}
 
 ## Мягкие ограничения (Soft Constraints)

@@ -18,21 +18,24 @@ markup:
 
 menu:
   main:
-    - name: Лекции
+    - name: Lectures
       pageRef: /lectures
       weight: 1
+    - name: Playground
+      pageRef: /playground
+      weight: 2
     - name: About
       pageRef: /about
-      weight: 2
+      weight: 3
     - name: Contact ↗
       url: "https://github.com/kozakromch"
-      weight: 3
-    - name: Search
       weight: 4
+    - name: Search
+      weight: 5
       params:
         type: search
     - name: GitHub
-      weight: 5
+      weight: 6
       url: "https://github.com/kozakromch/hextra-starter-template"
       params:
         icon: github

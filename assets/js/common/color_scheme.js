@@ -15,6 +15,9 @@ color_scheme.RED = function(p5) {
 color_scheme.BLUE = function(p5) {
   return p5.color(15, 76, 200, 255)
 };
+color_scheme.BLACK = function(p5) {
+  return p5.color(0, 0, 0, 255)
+};
 color_scheme.LIGHT_GRAY = function(p5) {
   return p5.color(230, 230, 230, 70)
 };
