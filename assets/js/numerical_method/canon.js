@@ -165,7 +165,7 @@ canon_namespace.CanonInterfaceEuler = class {
     // Draw info
     p5.fill(0);
     p5.stroke(0);
-    p5.text('Full Energy: ' + this.system_euler.E.toFixed(2), 10, 20);
+    p5.text('Energy: ' + this.system_euler.E.toFixed(2), 10, 20);
   }
   setup(p5) {}
   reset() {

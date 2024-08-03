@@ -1,5 +1,6 @@
 import color_scheme from '../../js/common/color_scheme.min.js';
 import point_namespace from '../../js/common/point.min.js';
+import sinusoidal_namespace from '../../js/common/sinusoidal_vis.min.js';
 
 var hard_ball_namespace = {};
 hard_ball_namespace.Parameters = class {
@@ -18,6 +19,7 @@ hard_ball_namespace.Parameters = class {
 hard_ball_namespace.System = class {
   constructor() {
     this.parameters = new hard_ball_namespace.Parameters();
+    this.initialyzeSystem();
   }
   reset() {
     this.initialyzeSystem();
@@ -34,20 +36,21 @@ hard_ball_namespace.System = class {
   }
   initialyzeSystem() {
     this.t = 0.;
-    this.point_0 = new point_namespace.Point(
+    let p_0 = new point_namespace.Point(
         this.parameters.x_0, this.parameters.y_0, this.parameters.vx_0,
-        this.parameters.vy_0, 0, -g);
+        this.parameters.vy_0, 0, 0);
     this.points = [];
     point_namespace.pointCircle(
-        this.points, this.point_0, this.parameters.num_points,
-        this.parameters.radius);
+        this.points, p_0, this.parameters.num_points, this.parameters.radius);
+    this.point_0 = new point_namespace.Point(
+        this.points[0].x, this.points[0].y, 0, 0, 0, 0);
     // create constraints between points
     this.spring_constraints = [];
     this.addSpringConstraint(1);
     this.addSpringConstraint(2);
-    this.addSpringConstraint(3);
-    this.addSpringConstraint(4);
-    this.addSpringConstraint(5);
+    // this.addSpringConstraint(3);
+    // this.addSpringConstraint(4);
+    // this.addSpringConstraint(5);
   }
 
 
@@ -116,24 +119,35 @@ hard_ball_namespace.System = class {
 };
 
 hard_ball_namespace.Visializer = class {
-  constructor() {}
+  constructor(system) {
+    this.spring_sinusoidals = [];
+    for (let i = 0; i < system.spring_constraints.length; i++) {
+      let constraint = system.spring_constraints[i];
+      let d = constraint.distance;
+      this.spring_sinusoidals.push(
+          new sinusoidal_namespace.SpringSinusoidal(100, 5, d * 0.1));
+    }
+    this.spring_sinusoidal_0 =
+        new sinusoidal_namespace.SpringSinusoidal(50, 5, 5);
+  }
   draw(p5, system, color) {
+    for (let i = 0; i < system.spring_constraints.length; i++) {
+      let constraint = system.spring_constraints[i];
+      this.spring_sinusoidals[i].draw(
+          p5, constraint.point1.x, p5.height - constraint.point1.y,
+          constraint.point2.x, p5.height - constraint.point2.y, color.alpha);
+    }
+    // draw spring between point 0 and start point
+    this.spring_sinusoidal_0.draw(
+        p5, system.point_0.x, p5.height - system.point_0.y, system.points[0].x,
+        p5.height - system.points[0].y, color.alpha);
+
     p5.stroke(0);
     p5.fill(color);
     for (let i = 0; i < system.parameters.num_points; i++) {
       let point = system.points[i];
-      p5.ellipse(point.x, p5.height - point.y, 10, 10);
+      p5.ellipse(point.x, p5.height - point.y, 15, 15);
     }
-    for (let i = 0; i < system.spring_constraints.length; i++) {
-      let constraint = system.spring_constraints[i];
-      p5.line(
-          constraint.point1.x, p5.height - constraint.point1.y,
-          constraint.point2.x, p5.height - constraint.point2.y);
-    }
-    // draw spring between point 0 and start point
-    p5.line(
-        system.points[0].x, p5.height - system.points[0].y, system.point_0_x,
-        p5.height - system.point_0_y);
   }
 };
 function createDiv(parent_id, name, class_attr) {
@@ -169,7 +183,7 @@ function createOutput(div) {
 hard_ball_namespace.HardBallInterface = class {
   constructor() {
     this.hard_ball = new hard_ball_namespace.System();
-    this.hard_ball_vis = new hard_ball_namespace.Visializer();
+    this.hard_ball_vis = new hard_ball_namespace.Visializer(this.hard_ball);
     this.base_name = 'hard_ball_sketch';
   }
   iter(p5) {
@@ -187,7 +201,7 @@ hard_ball_namespace.HardBallInterface = class {
       div_m_0.innerHTML = 'K';
       let div_m_1 = createDiv(div_r_1.id, div_r_1.id + '1', 'col-8');
       let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', '');
-      this.slider1 = createSlider(div_m_1, 0, 50);
+      this.slider1 = createSlider(div_m_1, 0, 150);
       this.output1 = createOutput(div_m_2);
     }
     this.slider1.oninput = function() {
@@ -200,7 +214,7 @@ hard_ball_namespace.HardBallInterface = class {
       let div_m_0 = createDiv(div_r_1.id, div_r_1.id + '0', 'col-1');
       let div_m_1 = createDiv(div_r_1.id, div_r_1.id + '1', 'col-8');
       let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', '');
-      this.slider2 = createSlider(div_m_1, 0, 5);
+      this.slider2 = createSlider(div_m_1, 0, 10);
       this.output2 = createOutput(div_m_2);
       div_m_0.innerHTML = 'D';
     }

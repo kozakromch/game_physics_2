@@ -9,7 +9,7 @@ hitman_relax_namespace.Parameters = class {
     this.num_points = 20;
     this.radius = 60.;
     this.x_0 = 250.;
-    this.y_0 = 170.;
+    this.y_0 = 150.;
     this.vx_0 = 0.;
     this.vy_0 = 0.;
     this.dt = 0.1;
@@ -17,7 +17,8 @@ hitman_relax_namespace.Parameters = class {
   }
 };
 hitman_relax_namespace.System = class {
-  constructor() {
+  constructor(with_floor) {
+    this.with_floor = with_floor;
     this.parameters = new hitman_relax_namespace.Parameters();
     this.initialyzeSystem();
   }
@@ -46,11 +47,11 @@ hitman_relax_namespace.System = class {
     this.spring_constraints = [];
     this.addSpringConstraint(1);
     this.addSpringConstraint(2);
-    this.addSpringConstraint(3);
+    // this.addSpringConstraint(3);
     this.addSpringConstraint(4);
-    this.addSpringConstraint(5);
+    // this.addSpringConstraint(5);
     this.addSpringConstraint(6);
-    this.addSpringConstraint(7);
+    // this.addSpringConstraint(7);
     // this.addSpringConstraint(8);
     // this.addSpringConstraint(9);
     this.addSpringConstraint(10);
@@ -60,6 +61,9 @@ hitman_relax_namespace.System = class {
     // this.addSpringConstraint(12);
     // this.addSpringConstraint(15);
     this.collisions = [];
+    if (!this.with_floor) {
+      this.sqeezeCircle();
+    }
   }
   calcSystem() {
     this.t += this.parameters.dt;
@@ -88,7 +92,6 @@ hitman_relax_namespace.System = class {
     let dl = distance - constraint.distance;
     return dl * dl > 0.1;
   }
-
   relaxOneConstraint(index) {
     let constraint = this.spring_constraints[index];
     let point1 = constraint.point1;
@@ -104,17 +107,37 @@ hitman_relax_namespace.System = class {
     point2.x += dl_x / 2;
     point2.y += dl_y / 2;
   }
+  // sqeeze points from circle to ellipse
+  sqeezeCircle() {
+    let a = 0.2;
+    let b = 1.9;
+    for (let i = 0; i < this.parameters.num_points; i++) {
+      let point = this.points[i];
+      let x = point.x - this.point_0.x;
+      let y = point.y - this.point_0.y;
+      let x_new = x * a;
+      let y_new = y * b;
+      point.x = x_new + this.point_0.x;
+      point.y = y_new + this.point_0.y;
+    }
+  }
 };
 
 hitman_relax_namespace.Visualizator = class {
+  constructor(with_floor) {
+    this.with_floor = with_floor;
+  }
   draw(p5, system, color_scheme) {
     // draw floor
-    let lg = color_scheme.GROUND(p5);
-    p5.stroke(lg);
-    p5.fill(lg);
-    p5.rect(0, system.parameters.floor, p5.width, p5.height - system.parameters
-                                                                .floor);
-    
+    if (this.with_floor) {
+      let lg = color_scheme.GROUND(p5);
+      p5.stroke(lg);
+      p5.fill(lg);
+      p5.rect(
+          0, system.parameters.floor, p5.width,
+          p5.height - system.parameters.floor);
+    }
+
     // draw constraints
     let black = color_scheme.BLACK(p5);
     p5.stroke(black);
@@ -131,16 +154,17 @@ hitman_relax_namespace.Visualizator = class {
     p5.fill(green);
     for (let i = 0; i < system.parameters.num_points; i++) {
       let point = system.points[i];
-      p5.ellipse(point.x, point.y, 15, 15);
+      p5.ellipse(point.x, point.y, 12, 12);
     }
   }
 };
 
 hitman_relax_namespace.Interface = class {
-  constructor() {
-    this.system = new hitman_relax_namespace.System();
-    this.visualizator = new hitman_relax_namespace.Visualizator();
-    this.base_name = 'hitman_relax_sketch';
+  constructor(base_name, with_floor) {
+    this.base_name = base_name;
+    this.with_floor = with_floor;
+    this.system = new hitman_relax_namespace.System(this.with_floor);
+    this.visualizator = new hitman_relax_namespace.Visualizator(this.with_floor);
     this.index = 0;
   }
   getFirstViolatedConstraint(start_index) {
@@ -152,8 +176,7 @@ hitman_relax_namespace.Interface = class {
     }
     return
   }
-  relaxConstraint(){
-
+  relaxConstraint() {
     if (this.index < this.system.collisions.length) {
       this.system.relaxCollisionConstraint(this.system.collisions[this.index]);
     } else {
@@ -169,9 +192,10 @@ hitman_relax_namespace.Interface = class {
     }
   }
   iter(p5) {
-
     if (this.index == 0) {
-      this.system.calcCollisions();
+      if (this.with_floor) {
+        this.system.calcCollisions();
+      }
     }
     this.relaxConstraint();
     this.index = (this.index + 1) %
@@ -182,7 +206,7 @@ hitman_relax_namespace.Interface = class {
     this.system.reset();
   }
   setup(p5) {
-    p5.frameRate(100);
+    p5.frameRate(50);
     this.system.parameters.x_0 = p5.width / 2;
   }
 };

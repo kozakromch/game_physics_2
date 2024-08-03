@@ -19,7 +19,7 @@ class CanonInterfaceAnalitical {
     // Draw info
     p5.fill(0);
     p5.stroke(0);
-    p5.text('Full Energy: ' + this.canon_system.E.toFixed(2), 10, 20);
+    p5.text('Energy: ' + this.canon_system.E.toFixed(2), 10, 20);
   }
   setup(p5) {}
   reset() {

@@ -1,6 +1,7 @@
 import color_scheme from '../../js/common/color_scheme.min.js';
 import common_vis_namespace from '../../js/common/common_vis.min.js';
 import energy_namespace from '../../js/common/energy.min.js';
+import sinusoidal_namespace from '../../js/common/sinusoidal_vis.min.js';
 
 let spring_namespace = {};
 spring_namespace.Parameters = class {
@@ -110,45 +111,10 @@ spring_namespace.SpringSystem = class {
   }
 };
 
-spring_namespace.SpringSinusoidal = class {
-  constructor(numPoints, amplitude, frequency) {
-    this.numPoints = numPoints;
-    this.amplitude = amplitude;
-    this.frequency = frequency;
-  }
-
-  draw(p5, startX, startY, endX, endY, opacity = 255) {
-    // Calculate the length of the spring
-    let length = p5.dist(startX, startY, endX, endY);
-
-    // Calculate the angle between the start and end points
-    let angle = p5.atan2(endY - startY, endX - startX);
-
-    // Draw the spring as a sinusoidal line
-    p5.noFill();
-    p5.beginShape();
-    p5.stroke(0, 0, 0, opacity);
-    for (let i = 0; i <= this.numPoints; i++) {
-      // Calculate the interpolation factor along the spring
-      let t = i / this.numPoints;
-
-      // Calculate the x-coordinate of the current point on the spring
-      let y = startY + p5.sin(angle) * (length * t);
-
-      // Calculate the y-coordinate of the current point on the spring
-      let x = startX + p5.cos(angle) * (length * t) +
-          this.amplitude * p5.sin(this.frequency * p5.TWO_PI * t);
-
-      // Draw the current point
-      p5.vertex(x, y);
-    }
-    p5.endShape();
-  }
-}
 
 spring_namespace.SpringVis = class {
   constructor() {
-    this.spring_sinusoidal = new spring_namespace.SpringSinusoidal(100, 5, 8);
+    this.spring_sinusoidal = new sinusoidal_namespace.SpringSinusoidal(100, 5, 8);
   }
   draw(p5, spring_system, color, alpha) {
     let spring_pos_x = p5.width / 2;
@@ -163,15 +129,13 @@ spring_namespace.SpringVis = class {
     p5.ellipse(spring_pos_x, spring_pos_y, 20, 20);
   }
 };
-
-
 spring_namespace.SpringInterfaceEuler = class {
   constructor(method) {
     this.base_name = method + '_spring';
     this.system_euler = new spring_namespace.SpringSystem(method);
-    this.vis_euler = new spring_namespace.SpringVis();
+    this.vis_euler = new spring_vis.SpringVis();
     this.system_an = new spring_namespace.SpringSystem('analitical');
-    this.vis_an = new spring_namespace.SpringVis();
+    this.vis_an = new spring_vis.SpringVis();
   }
   iter(p5) {
     this.system_an.calcSystem();
@@ -185,7 +149,7 @@ spring_namespace.SpringInterfaceEuler = class {
     // Draw info
     p5.fill(0);
     p5.stroke(0);
-    p5.text('Full Energy: ' + this.system_euler.E.toFixed(2), 10, 20);
+    p5.text('Energy: ' + this.system_euler.E.toFixed(2), 10, 20);
   }
   setup(p5) {}
   reset() {

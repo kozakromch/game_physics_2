@@ -39,8 +39,6 @@ common_vis_namespace.alphaLine = function(
   const increment_3 =
       (color_to.levels[3] - color_from.levels[3]) / trajectory.length;
 
-
-
   p5.noFill();
   p5.beginShape();
   for (let i = 0; i < trajectory.length - 1; i++) {

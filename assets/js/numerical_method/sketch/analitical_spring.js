@@ -20,7 +20,7 @@ import spring_namespace from '../../../js/numerical_method/spring.min.js';
       // Draw info
       p5.fill(0);
       p5.stroke(0);
-      p5.text('Full Energy: ' + this.spring_system.E.toFixed(2), 10, 20);
+      p5.text('Energy: ' + this.spring_system.E.toFixed(2), 10, 20);
     }
     setup(p5) {}
     reset() {
