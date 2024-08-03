@@ -57,6 +57,35 @@ common_vis_namespace.alphaLine = function(
   p5.endShape();
 };
 
+common_vis_namespace.alphaCircle = function(
+    p5, color_from, color_to, r_from, r_to, trajectory) {
+  const increment_0 =
+      (color_to.levels[0] - color_from.levels[0]) / trajectory.length;
+  const increment_1 =
+      (color_to.levels[1] - color_from.levels[1]) / trajectory.length;
+  const increment_2 =
+      (color_to.levels[2] - color_from.levels[2]) / trajectory.length;
+  const increment_3 =
+      (color_to.levels[3] - color_from.levels[3]) / trajectory.length;
+  const increment_r = (r_to - r_from) / trajectory.length;
+
+  // draw a circle with a changing color and radius
+  for (let i = 0; i < trajectory.length - 1; i++) {
+    // Set the alpha value for the current segment
+    p5.no_stroke;
+    p5.fill(
+        color_from.levels[0] + increment_0 * i,
+        color_from.levels[1] + increment_1 * i,
+        color_from.levels[2] + increment_2 * i,
+        color_from.levels[3] + increment_3 * i);
+
+    // Draw the current segment
+    let point = trajectory[i];
+    p5.ellipse(
+        point.x, point.y, r_from + increment_r * i, r_from + increment_r * i);
+  }
+};
+
 common_vis_namespace.copyColor = function(p5, color) {
   let new_color = p5.color(color.levels);
   return new_color;

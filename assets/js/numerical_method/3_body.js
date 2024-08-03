@@ -21,15 +21,16 @@ three_body_namespace.Parameters = class {
     this.vy2_0 = 0.;
     this.vx3_0 = 0.;
     this.vy3_0 = -5.5;
-    this.dt = 0.01;
+    this.dt = 0.005;
   };
 };
 
 three_body_namespace.ThreeBody = class {
   constructor() {
     this.parameters = new three_body_namespace.Parameters();
-    this.initializeSystem();
     this.scale = 1;
+    this.keep_cm = true;
+    this.initializeSystem();
   }
   reset() {
     this.initializeSystem();
@@ -50,7 +51,6 @@ three_body_namespace.ThreeBody = class {
     this.m3 = this.parameters.m3 + Math.random() * this.scale;
     this.vx3 = this.parameters.vx3_0;
     this.vy3 = this.parameters.vy3_0 + Math.random() * this.scale;
-
     this.history1 = [];
     this.history2 = [];
     this.history3 = [];
@@ -68,6 +68,9 @@ three_body_namespace.ThreeBody = class {
     }
     this.t += this.parameters.dt;
     this.symplecticEuler();
+    if (this.keep_cm) {
+      this.keepCenterOfMass();
+    }
   }
 
   symplecticEuler() {
@@ -101,6 +104,17 @@ three_body_namespace.ThreeBody = class {
     this.x3 += this.vx3 * this.parameters.dt;
     this.y3 += this.vy3 * this.parameters.dt;
   }
+  keepCenterOfMass() {
+    let m = this.m1 + this.m2 + this.m3;
+    let x = (this.m1 * this.x1 + this.m2 * this.x2 + this.m3 * this.x3) / m;
+    let y = (this.m1 * this.y1 + this.m2 * this.y2 + this.m3 * this.y3) / m;
+    this.x1 -= x;
+    this.x2 -= x;
+    this.x3 -= x;
+    this.y1 -= y;
+    this.y2 -= y;
+    this.y3 -= y;
+  }
 };
 
 three_body_namespace.ThreeBodyInterface = class {
@@ -108,8 +122,11 @@ three_body_namespace.ThreeBodyInterface = class {
     this.three_body = new three_body_namespace.ThreeBody();
     this.method = 'symplectic';
     this.base_name = 'three_body_sketch';
+    this.r_1 = this.getRadius(this.three_body.m1);
+    this.r_2 = this.getRadius(this.three_body.m2);
+    this.r_3 = this.getRadius(this.three_body.m3);
   }
-  draw_history(p5, history, color) {
+  draw_history(p5, history, color, radius) {
     let trajectory = [];
     for (let i = 0; i < history.length; i++) {
       trajectory.push({
@@ -117,11 +134,13 @@ three_body_namespace.ThreeBodyInterface = class {
         y: -history[i][1] * 50 + p5.height / 2
       });
     }
+    let color_to = common_vis_namespace.copyColor(p5, color);
+    color_to.setAlpha(50);
     let color_from = common_vis_namespace.copyColor(p5, color);
     color_from.setAlpha(0);
-    common_vis_namespace.alphaLine(p5, color_from, color, trajectory);
+    common_vis_namespace.alphaCircle(p5, color_from, color_to, 0, radius/1.5, trajectory);
   }
-  draw_circle(p5, x, y, color, radius) {
+  drawCircle(p5, x, y, color, radius) {
     p5.stroke(0);
     p5.fill(color);
     p5.ellipse(x * 50 + p5.width / 2, -y * 50 + p5.height / 2, radius, radius);
@@ -134,17 +153,14 @@ three_body_namespace.ThreeBodyInterface = class {
     const c_1 = p5.color(color_scheme.RED(p5));
     const c_2 = p5.color(color_scheme.GREEN(p5));
     const c_3 = p5.color(color_scheme.BLUE(p5));
-    this.draw_history(p5, this.three_body.history1, c_1);
-    this.draw_history(p5, this.three_body.history2, c_2);
-    this.draw_history(p5, this.three_body.history3, c_3);
+    this.draw_history(p5, this.three_body.history1, c_1, this.r_1);
+    this.draw_history(p5, this.three_body.history2, c_2, this.r_2);
+    this.draw_history(p5, this.three_body.history3, c_3, this.r_3);
     // draw circle for each body
 
-    let r_1 = this.getRadius(this.three_body.m1);
-    this.draw_circle(p5, this.three_body.x1, this.three_body.y1, c_1, r_1);
-    let r_2 = this.getRadius(this.three_body.m2);
-    this.draw_circle(p5, this.three_body.x2, this.three_body.y2, c_2, r_2);
-    let r_3 = this.getRadius(this.three_body.m3);
-    this.draw_circle(p5, this.three_body.x3, this.three_body.y3, c_3, r_3);
+    this.drawCircle(p5, this.three_body.x1, this.three_body.y1, c_1, this.r_1);
+    this.drawCircle(p5, this.three_body.x2, this.three_body.y2, c_2, this.r_2);
+    this.drawCircle(p5, this.three_body.x3, this.three_body.y3, c_3, this.r_3);
   }
 
   iter(p5) {
@@ -154,9 +170,8 @@ three_body_namespace.ThreeBodyInterface = class {
   reset() {
     this.three_body.reset();
   }
-  setup(p5) {}
-  calcSystem() {
-    this.three_body.calcSystem();
+  setup(p5) {
+    p5.setFrameRate(60);
   }
 };
 export default three_body_namespace;
