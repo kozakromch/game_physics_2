@@ -15,7 +15,6 @@ hitman_relax_namespace.Parameters = class {
     this.vy_0 = 0.;
     this.dt = 0.02;
     this.floor = 180;
-    this.is_shuffle = false;
   }
 };
 hitman_relax_namespace.System = class {
@@ -49,13 +48,20 @@ hitman_relax_namespace.System = class {
     // create constraints between points
     this.spring_constraints = [];
     this.addSpringConstraint(1);
-    // this.addSpringConstraint(2);
-    this.addSpringConstraint(5);
 
 
     const np = this.parameters.num_points;
-    if (np >= 10 && np <= 30) {
+    if (np >= 2 && np <= 10) {
+      this.addSpringConstraint(2);
+    }
+    if (np >= 3 && np <= 10) {
+      this.addSpringConstraint(3);
+    }
+    if (np >= 6 && np <= 20) {
       this.addSpringConstraint(5);
+    }
+    if (np >= 10 && np <= 20) {
+      this.addSpringConstraint(8);
     }
     if (np >= 20 && np <= 30) {
       this.addSpringConstraint(10);
@@ -69,17 +75,6 @@ hitman_relax_namespace.System = class {
     if (np >= 50 && np <= 60) {
       this.addSpringConstraint(25);
     }
-
-
-    const shuffleArray = array => {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-      }
-    };
-    if (this.parameters.is_shuffle) shuffleArray(this.spring_constraints);
 
     this.collisions = [];
     if (!this.with_floor) {
@@ -105,7 +100,6 @@ hitman_relax_namespace.System = class {
       if (point.y > this.parameters.floor) {
         point.y = this.parameters.floor;
         point.prev_y = this.parameters.floor;
-        point.x = point.prev_x;
       }
     }
   }
@@ -299,21 +293,18 @@ hitman_relax_namespace.SimulationInterface = class {
   }
   iter(p5) {
     let n_points_new = this.slider2.value;
-    if ((this.n_points != n_points_new) ||
-        (this.is_shuffle != this.is_shuffle_new)) {
+    if (this.n_points != n_points_new) {
       this.iter_new_simul = 8;
       this.n_points = n_points_new;
-      this.is_shuffle = this.is_shuffle_new;
     }
     if (this.iter_new_simul >= 0) {
       this.iter_new_simul--;
     }
     if (this.iter_new_simul == 0) {
       this.system.parameters.num_points = n_points_new;
-      this.system.parameters.is_shuffle = this.is_shuffle;
       this.system.initialyzeSystem();
     }
-    this.system.simulate(this.slider1.value, this.is_shuffle);
+    this.system.simulate(this.slider1.value);
     this.visualizator.draw(p5, this.system, color_scheme, 8);
   }
   setup(p5) {
@@ -330,7 +321,7 @@ hitman_relax_namespace.SimulationInterface = class {
     {
       let [div_m_1, div_m_2] =
           ui_namespace.createDivsForSlider(this.base_name, '2', 'N points');
-      this.slider2 = ui_namespace.createSlider(div_m_1, 4, 30, 26);
+      this.slider2 = ui_namespace.createSlider(div_m_1, 4, 20, 16);
       this.output2 = ui_namespace.createOutput(div_m_2);
       this.output2.innerHTML = this.slider2.value;
     }
@@ -339,23 +330,7 @@ hitman_relax_namespace.SimulationInterface = class {
     }.bind(this);
     this.n_points = this.slider2.value;
 
-    {
-      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
-          this.base_name, '3', 'Shuffle Constraints');
-      this.button3 = ui_namespace.createBoolButton(div_m_1, 'Shuffle');
-    }
-    // change text of button
-    this.is_shuffle = false;
-    this.is_shuffle_new = false;
-    this.button3.onclick = function() {
-      if (this.button3.innerHTML == 'Shuffle') {
-        this.button3.innerHTML = 'Stop Shuffle';
-        this.is_shuffle_new = true;
-      } else {
-        this.button3.innerHTML = 'Shuffle';
-        this.is_shuffle_new = false;
-      }
-    }.bind(this);
+
 
     p5.frameRate(30);
 
