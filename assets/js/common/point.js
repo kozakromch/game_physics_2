@@ -9,6 +9,19 @@ point_namespace.Point = class {
     this.ay = ay;
   }
 };
+point_namespace.VerletPoint = class {
+  constructor(x, y, vx, vy, ax, ay) {
+    this.x = x;
+    this.y = y;
+    this.prev_x = x;
+    this.prev_y = y;
+    this.vx = vx;
+    this.vy = vy;
+    this.ax = ax;
+    this.ay = ay;
+  }
+};
+
 point_namespace.SpringConstraint = class {
   constructor(point1, point2, distance) {
     this.point1 = point1;
@@ -29,7 +42,7 @@ point_namespace.pointCircle = function(points, p_0, num_points, radius) {
     let vy = p_0.vy;
     let ax = p_0.ax;
     let ay = p_0.ay;
-    points.push(new point_namespace.Point(x, y, vx, vy, ax, ay));
+    points.push(new point_namespace.VerletPoint(x, y, vx, vy, ax, ay));
   }
 };
 

@@ -21,7 +21,7 @@ base_canvas_namespace.BaseCanvasController = class {
   initializeCanvas(base_name) {
     console.log(base_name);
     this.width = document.getElementById(base_name + '_base_id').clientWidth;
-    this.height = 300;
+    this.height = document.getElementById(base_name + '_base_id').clientHeight;
     this.canvas = document.getElementById(base_name + '_canvas_id');
     this.pause_button = document.getElementById(base_name + '_stop_button_id');
 

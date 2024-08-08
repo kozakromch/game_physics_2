@@ -1,6 +1,7 @@
 import color_scheme from '../../js/common/color_scheme.min.js';
 import point_namespace from '../../js/common/point.min.js';
 import sinusoidal_namespace from '../../js/common/sinusoidal_vis.min.js';
+import ui_namespace from '../../js/common/ui.min.js';
 
 var hard_ball_namespace = {};
 hard_ball_namespace.Parameters = class {
@@ -150,35 +151,6 @@ hard_ball_namespace.Visializer = class {
     }
   }
 };
-function createDiv(parent_id, name, class_attr) {
-  let div = document.createElement('div');
-  div.setAttribute('class', class_attr);
-  let div_name = name;
-  div.id = div_name;
-  document.getElementById(parent_id).appendChild(div);
-  return div;
-}
-
-function createSlider(div, min, max) {
-  let slider = document.createElement('input');
-  slider.setAttribute('type', 'range');
-  slider.setAttribute('min', min);
-  slider.setAttribute('max', max);
-  slider.setAttribute('class', 'form-range align-middle');
-  slider.value = (max - min) / 2;
-  slider.step = (max - min) / 100;
-  slider.id = div.id + 'slider';
-  document.getElementById(div.id).appendChild(slider);
-  return slider;
-}
-function createOutput(div) {
-  let output = document.createElement('output');
-  // output.setAttribute('class', '');
-  output.id = div.id + 'output';
-  output.innerHTML = '50.5';
-  document.getElementById(div.id).appendChild(output);
-  return output;
-}
 
 hard_ball_namespace.HardBallInterface = class {
   constructor() {
@@ -194,29 +166,20 @@ hard_ball_namespace.HardBallInterface = class {
     this.hard_ball.parameters.x_0 = p5.width / 2;
     this.hard_ball.initialyzeSystem();
     {
-      let parent_name = base_name + '_add_space';
-      let div_c_1 = createDiv(parent_name, parent_name + '1', 'col-sm');
-      let div_r_1 = createDiv(div_c_1.id, div_c_1.id + '1', 'row');
-      let div_m_0 = createDiv(div_r_1.id, div_r_1.id + '0', 'col-1');
-      div_m_0.innerHTML = 'K';
-      let div_m_1 = createDiv(div_r_1.id, div_r_1.id + '1', 'col-8');
-      let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', '');
-      this.slider1 = createSlider(div_m_1, 0, 150);
-      this.output1 = createOutput(div_m_2);
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(base_name, '1', "K");
+      this.slider1 = ui_namespace.createSlider(div_m_1, 0, 150);
+      this.output1 = ui_namespace.createOutput(div_m_2);
+      this.output1.innerHTML = this.slider1.value;
     }
     this.slider1.oninput = function() {
       this.output1.innerHTML = this.slider1.value;
     }.bind(this);
+    
     {
-      let parent_name = base_name + '_add_space';
-      let div_c_1 = createDiv(parent_name, parent_name + '2', 'col-sm');
-      let div_r_1 = createDiv(div_c_1.id, div_c_1.id + '1', 'row');
-      let div_m_0 = createDiv(div_r_1.id, div_r_1.id + '0', 'col-1');
-      let div_m_1 = createDiv(div_r_1.id, div_r_1.id + '1', 'col-8');
-      let div_m_2 = createDiv(div_r_1.id, div_r_1.id + '2', '');
-      this.slider2 = createSlider(div_m_1, 0, 10);
-      this.output2 = createOutput(div_m_2);
-      div_m_0.innerHTML = 'D';
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(base_name, '2', "D");
+      this.slider2 = ui_namespace.createSlider(div_m_1, 0, 10);
+      this.output2 = ui_namespace.createOutput(div_m_2);
+      this.output2.innerHTML = this.slider2.value;
     }
     this.slider2.oninput = function() {
       this.output2.innerHTML = this.slider2.value;

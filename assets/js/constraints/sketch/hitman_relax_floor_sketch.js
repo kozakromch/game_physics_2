@@ -4,7 +4,7 @@ import p5 from '../../../js/libs/p5.min.js';
 
 {
   let my_interface =
-      new hitman_relax_namespace.Interface('hitman_relax_floor_sketch', true);
+      new hitman_relax_namespace.RelaxInterface('hitman_relax_floor_sketch', true);
   let main_visualizator =
       main_visualizator_namespace.getMainVisualizator(my_interface);
   new p5(main_visualizator);
