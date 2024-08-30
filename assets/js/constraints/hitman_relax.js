@@ -23,6 +23,8 @@ hitman_relax_namespace.System = class {
     this.simul_iter = 1;
     this.with_floor = with_floor;
     this.parameters = new hitman_relax_namespace.Parameters();
+    this.min_index = -1;
+
   }
   reset() {
     this.initialyzeSystem();
@@ -84,9 +86,10 @@ hitman_relax_namespace.System = class {
   calcSystem() {
     this.t += this.parameters.dt;
   }
-  simulate(relax_iter) {
+  simulate(relax_iter, is_mouse, mouse_x, mouse_y, width) {
+    this.mouseLogic(is_mouse, mouse_x, mouse_y);
     this.relax_iter = relax_iter;
-    this.relaxAllCollisions();
+    this.relaxAllCollisions(width);
     this.verlet();
     // this.updatePrevP();
     for (let i = 0; i < this.relax_iter; i++) {
@@ -94,12 +97,54 @@ hitman_relax_namespace.System = class {
       this.relaxAllCollisions();
     }
   }
-  relaxAllCollisions() {
+  mouseLogic(is_mouse, mouse_x, mouse_y) {
+    // find the closest point to the mouse
+    if (is_mouse) {
+      if (this.min_index == -1) {
+        this.findClosestToMouse(mouse_x, mouse_y);
+      }
+      let point = this.points[this.min_index];
+      point.x = mouse_x;
+      point.y = mouse_y;
+    } else {
+      this.min_index = -1;
+    }
+
+  }
+
+  findClosestToMouse(mouse_x, mouse_y) {
+    let min_distance = 100000;
+    let min_index = 0;
+    for (let i = 0; i < this.parameters.num_points; i++) {
+      let point = this.points[i];
+      let distance = point_namespace.distance(point, {x: mouse_x, y: mouse_y});
+      if (distance < min_distance) {
+        min_distance = distance;
+        min_index = i;
+      }
+    }
+    this.min_index = min_index;
+  }
+
+  relaxAllCollisions(width) {
     for (let i = 0; i < this.parameters.num_points; i++) {
       let point = this.points[i];
       if (point.y > this.parameters.floor) {
         point.y = this.parameters.floor;
         point.prev_y = this.parameters.floor;
+      }
+      //also check sides and top
+      if (point.x < 0) {
+        point.x = 0;
+        point.prev_x = 0;
+      }
+      if (point.x > width) {
+        point.x = width;
+        point.prev_x = width;
+      }
+      if (point.y < 0) {
+        point.y = 0;
+        point.prev_y = 0;
       }
     }
   }
@@ -304,7 +349,21 @@ hitman_relax_namespace.SimulationInterface = class {
       this.system.parameters.num_points = n_points_new;
       this.system.initialyzeSystem();
     }
-    this.system.simulate(this.slider1.value);
+    // get from p5 mouse position
+    let mouse_x = p5.mouseX;
+    let mouse_y = p5.mouseY;
+    // if left mouse button is pressed
+    let is_mouse = true;
+    if (mouse_x < 0 || mouse_x > p5.width || mouse_y < 0 ||
+        mouse_y > p5.height) {
+      is_mouse = false;
+    }
+    if (p5.mouseIsPressed == false) {
+      is_mouse = false;
+    }
+
+    let relax_iter = this.slider1.value;
+    this.system.simulate(relax_iter, is_mouse, mouse_x, mouse_y, p5.width);
     this.visualizator.draw(p5, this.system, color_scheme, 8);
   }
   setup(p5) {
@@ -329,8 +388,6 @@ hitman_relax_namespace.SimulationInterface = class {
       this.output2.innerHTML = this.slider2.value;
     }.bind(this);
     this.n_points = this.slider2.value;
-
-
 
     p5.frameRate(30);
 

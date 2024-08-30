@@ -9,14 +9,18 @@ ui_namespace.createDiv = function(parent_id, name, class_attr) {
   return div;
 };
 
-ui_namespace.createSlider = function(div, min, max, steps = 100) {
+ui_namespace.createSlider = function(div, min, max, steps = 100, value) {
   let slider = document.createElement('input');
   slider.setAttribute('type', 'range');
   slider.setAttribute('min', min);
   slider.setAttribute('max', max);
   slider.setAttribute('class', 'align-middle');
   slider.setAttribute('style', 'width:100%');
+  if (value) {
+    slider.value = value;
+  } else {
   slider.value = (max - min) / 2;
+  }
   slider.step = (max - min) / steps;
   slider.id = div.id + 'slider';
   document.getElementById(div.id).appendChild(slider);
