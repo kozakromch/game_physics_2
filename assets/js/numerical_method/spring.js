@@ -133,9 +133,9 @@ spring_namespace.SpringInterfaceEuler = class {
   constructor(method) {
     this.base_name = method + '_spring';
     this.system_euler = new spring_namespace.SpringSystem(method);
-    this.vis_euler = new spring_vis.SpringVis();
+    this.vis_euler = new spring_namespace.SpringVis();
     this.system_an = new spring_namespace.SpringSystem('analitical');
-    this.vis_an = new spring_vis.SpringVis();
+    this.vis_an = new spring_namespace.SpringVis();
   }
   iter(p5) {
     this.system_an.calcSystem();
