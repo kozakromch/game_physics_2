@@ -82,7 +82,7 @@ hitman_relax_namespace.System = class {
       }
     }
   }
-  simulate(relax_iter, is_mouse, mouse_x, mouse_y, width) {
+  simulate(relax_iter, is_mouse, mouse_x, mouse_y, width, alpha_relax) {
     this.mouseLogic(is_mouse, mouse_x, mouse_y);
     this.relax_iter = relax_iter;
 
@@ -91,7 +91,7 @@ hitman_relax_namespace.System = class {
     this.verlet();
     for (let i = 0; i < this.relax_iter; i++) {
       this.relaxFixedPoints();
-      this.relaxAllSpringConstraints();
+      this.relaxAllSpringConstraints(alpha_relax);
       this.relaxFixedPoints();
     }
   }
@@ -221,10 +221,10 @@ hitman_relax_namespace.System = class {
     }
   }
 
-  relaxAllSpringConstraints() {
+  relaxAllSpringConstraints(alpha_relax) {
     this.removeStretchedConstraints();
     for (let i = this.spring_constraints.length - 1; i >= 0; i--) {
-      this.relaxOneConstraint(i);
+      this.relaxOneConstraint(i, alpha_relax);
     }
   }
   removeStretchedConstraints() {
@@ -239,7 +239,7 @@ hitman_relax_namespace.System = class {
       }
     }
   }
-  relaxOneConstraint(index) {
+  relaxOneConstraint(index, alpha_relax) {
     let constraint = this.spring_constraints[index];
     let point1 = constraint.point1;
     let point2 = constraint.point2;
@@ -252,10 +252,10 @@ hitman_relax_namespace.System = class {
     let dl = distance - constraint.distance;
     let dl_x = dl * dx / distance;
     let dl_y = dl * dy / distance;
-    point1.x -= dl_x / 2;
-    point1.y -= dl_y / 2;
-    point2.x += dl_x / 2;
-    point2.y += dl_y / 2;
+    point1.x -= alpha_relax * dl_x / 2;
+    point1.y -= alpha_relax * dl_y / 2;
+    point2.x += alpha_relax * dl_x / 2;
+    point2.y += alpha_relax * dl_y / 2;
   }
 
   verlet() {
@@ -335,18 +335,6 @@ hitman_relax_namespace.SimulationInterface = class {
     this.iter_new_simul = -1;
   }
   iter(p5) {
-    let n_points_new = this.slider2.value;
-    if (this.n_points != n_points_new) {
-      this.iter_new_simul = 8;
-      this.n_points = n_points_new;
-    }
-    if (this.iter_new_simul >= 0) {
-      this.iter_new_simul--;
-    }
-    if (this.iter_new_simul == 0) {
-      this.system.parameters.num_points = n_points_new;
-      this.system.initialyzeSystem();
-    }
     // get from p5 mouse position
     let mouse_x = p5.mouseX;
     let mouse_y = p5.mouseY;
@@ -361,7 +349,9 @@ hitman_relax_namespace.SimulationInterface = class {
     }
 
     let relax_iter = this.slider1.value;
-    this.system.simulate(relax_iter, is_mouse, mouse_x, mouse_y, p5.width);
+    let alpha = this.slider2.value/ 100;
+    this.system.simulate(
+        relax_iter, is_mouse, mouse_x, mouse_y, p5.width, alpha);
     this.visualizator.draw(p5, this.system, color_scheme, 10);
   }
   setup(p5) {
@@ -377,21 +367,20 @@ hitman_relax_namespace.SimulationInterface = class {
     }.bind(this);
     {
       let [div_m_1, div_m_2] =
-          ui_namespace.createDivsForSlider(this.base_name, '2', 'N points');
-      this.slider2 = ui_namespace.createSlider(div_m_1, 10, 30, 20, 20);
+          ui_namespace.createDivsForSlider(this.base_name, '2', 'Alpha %');
+      this.slider2 = ui_namespace.createSlider(div_m_1, 0, 100, 100);
       this.output2 = ui_namespace.createOutput(div_m_2);
       this.output2.innerHTML = this.slider2.value;
     }
     this.slider2.oninput = function() {
       this.output2.innerHTML = this.slider2.value;
     }.bind(this);
-    this.n_points = this.slider2.value;
+    this.alpha = this.slider2.value;
 
     p5.frameRate(30);
 
     this.system.parameters.width = p5.width;
     this.system.parameters.height = p5.height;
-    this.system.parameters.num_points = this.n_points;
     this.system.parameters.floor = p5.height - 5;
     this.system.initialyzeSystem();
   }
