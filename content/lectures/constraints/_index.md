@@ -7,7 +7,6 @@ prev:
 next: 
 toc: true
 math: true
-
 ---
 
 ## Интро

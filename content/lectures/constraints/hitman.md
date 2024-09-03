@@ -275,3 +275,4 @@ $$
 ## Источники
 
 [Оригинальная статья от разработчика](https://www.cs.cmu.edu/afs/cs/academic/class/15462-s13/www/lec_slides/Jakobsen.pdf)
+[Хороший видос о Верле и упругом столкновении](https://www.youtube.com/watch?v=3HjO_RGIjCU)
