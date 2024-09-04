@@ -81,6 +81,9 @@ $$
   <div class="col" style="margin-top: 3%;">
   {{< card link="hitman" title="Hitman" image="images/constraints/hitman/main.excalidraw.png" icon="book-open" >}}
   </div>
+  <div class="col" style="margin-top: 3%;">
+  {{< card link="soft_constraints" title="Soft constraints" image="images/constraints/soft_constraints/main.excalidraw.png" icon="book-open" >}}
+  </div>
 </div>
 </div>
 </div>
