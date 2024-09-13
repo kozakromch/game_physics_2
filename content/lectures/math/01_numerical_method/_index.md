@@ -42,7 +42,7 @@ math: true
 
 Нам же достаточно понимать малую часть от этого. Для одномерной системы, например, пружины, которая может колебаться по одной оси, фазовое пространство — это график, где на одной оси у нас координата, а на другой — импульс. Точка на этом графике — это состояние системы.
 
-{{< image path="images/numerical_method/phase_space_spring.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/phase_space_spring.excalidraw.png" >}}
 
 Если же пружинка может колебаться в двух направлениях, то фазовое пространство будет четырехмерным — импульсы и координаты по двум направлениям.
 
@@ -51,7 +51,7 @@ math: true
 
 Очень полезно и приятно рисовать векторные поля системы на фазовом пространстве. Векторное поле — это набор векторов, каждый из которых показывает направление и скорость изменения в каждой точке фазового пространства. Вот так будет выглядеть фазовое пространство для пружинки:
 
-{{< image  path="images/numerical_method/phase_trajectory.excalidraw.png" >}}
+{{< image  path="images/math/numerical_method/phase_trajectory.excalidraw.png" >}}
 
 
 ## Модельные задача
@@ -64,7 +64,7 @@ math: true
 
 ### Стрельба из пушки
 
-{{< image path="images/numerical_method/canon.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/canon.excalidraw.png" >}}
 
 Тело массой $m$ вылетает из пушки с начальной скоростью $v_0$ под углом $\alpha$ к горизонту.
 {{<details title="Аналитическое решение" closed="true" >}}
@@ -135,7 +135,7 @@ $$
 
 Пружинка с коэффициентом жесткости $k$, массой $m$ и начальным смещением $x_0$  и начальной скоростью $v_0$.
 
-{{< image  path="images/numerical_method/spring.excalidraw.png" >}}
+{{< image  path="images/math/numerical_method/spring.excalidraw.png" >}}
 {{<details title="Аналитическое решение" closed="true" >}}
 $$
 \ddot{x} = -\frac{k}{m}x,\\

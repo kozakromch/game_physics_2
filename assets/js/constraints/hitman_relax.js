@@ -24,7 +24,6 @@ hitman_relax_namespace.System = class {
     this.with_floor = with_floor;
     this.parameters = new hitman_relax_namespace.Parameters();
     this.min_index = -1;
-
   }
   reset() {
     this.initialyzeSystem();
@@ -109,7 +108,6 @@ hitman_relax_namespace.System = class {
     } else {
       this.min_index = -1;
     }
-
   }
 
   findClosestToMouse(mouse_x, mouse_y) {
@@ -133,7 +131,7 @@ hitman_relax_namespace.System = class {
         point.y = this.parameters.floor;
         point.prev_y = this.parameters.floor;
       }
-      //also check sides and top
+      // also check sides and top
       if (point.x < 0) {
         point.x = 0;
         point.prev_x = 0;
@@ -189,9 +187,10 @@ hitman_relax_namespace.System = class {
     }
   }
 
-  relaxCollisionConstraint(index) {
+  relaxCollisionConstraint(index, alpha_over_relax = 1.0) {
     let point = this.points[index];
-    point.y = this.parameters.floor;
+    let delta = this.parameters.floor - point.y;
+    point.y = delta * alpha_over_relax + point.y;
   }
   isOneConstraintViolated(index) {
     let constraint = this.spring_constraints[index];
@@ -203,7 +202,7 @@ hitman_relax_namespace.System = class {
     let dl = distance - constraint.distance;
     return dl * dl > 0.1;
   }
-  relaxOneConstraint(index) {
+  relaxOneConstraint(index, alpha_over_relax = 1.0) {
     let constraint = this.spring_constraints[index];
     let point1 = constraint.point1;
     let point2 = constraint.point2;
@@ -213,10 +212,10 @@ hitman_relax_namespace.System = class {
     let dl = distance - constraint.distance;
     let dl_x = dl * dx / distance;
     let dl_y = dl * dy / distance;
-    point1.x -= dl_x / 2;
-    point1.y -= dl_y / 2;
-    point2.x += dl_x / 2;
-    point2.y += dl_y / 2;
+    point1.x -= alpha_over_relax * dl_x / 2;
+    point1.y -= alpha_over_relax * dl_y / 2;
+    point2.x += alpha_over_relax * dl_x / 2;
+    point2.y += alpha_over_relax * dl_y / 2;
   }
   // sqeeze points from circle to ellipse
   sqeezeCircle() {
@@ -271,7 +270,7 @@ hitman_relax_namespace.Visualizator = class {
 };
 
 hitman_relax_namespace.RelaxInterface = class {
-  constructor(base_name, with_floor) {
+  constructor(base_name, with_floor, with_overrelax = false) {
     this.base_name = base_name;
     this.with_floor = with_floor;
     this.system = new hitman_relax_namespace.System(this.with_floor);
@@ -279,6 +278,8 @@ hitman_relax_namespace.RelaxInterface = class {
         new hitman_relax_namespace.Visualizator(this.with_floor);
     this.index = 0;
     this.completed_iter = -1;
+    this.iter_new_simul = -1;
+    this.with_overrelax = with_overrelax;
   }
   getFirstViolatedConstraint(start_index) {
     for (let i = start_index; i < this.system.spring_constraints.length; i++) {
@@ -289,9 +290,10 @@ hitman_relax_namespace.RelaxInterface = class {
     }
     return
   }
-  relaxConstraint() {
+  relaxConstraint(alpha_over_relax = 1.0) {
     if (this.index < this.system.collisions.length) {
-      this.system.relaxCollisionConstraint(this.system.collisions[this.index]);
+      this.system.relaxCollisionConstraint(
+          this.system.collisions[this.index], alpha_over_relax);
     } else {
       let ind = this.index - this.system.collisions.length;
 
@@ -311,20 +313,75 @@ hitman_relax_namespace.RelaxInterface = class {
       }
       this.completed_iter++;
     }
-    this.relaxConstraint();
+    if (this.with_overrelax) {
+      this.iterOverrelax();
+    } else {
+      this.relaxConstraint();
+    }
     this.index = (this.index + 1) %
         (this.system.collisions.length + this.system.spring_constraints.length);
     this.visualizator.draw(p5, this.system, color_scheme);
-    // text of completed iterations
+
     p5.fill(0);
     p5.text('Completed Iterations: ' + this.completed_iter, 10, 20);
   }
+  iterOverrelax() {
+    this.newSimulation();
+    let alpha_over_relax = this.slider2.value;
+    if (this.completed_iter > this.overrelax_iter) {
+      alpha_over_relax = 1.0;
+    }
+    this.relaxConstraint(alpha_over_relax);
+  }
+  newSimulation() {
+    let overrelax_iter_new = this.slider1.value;
+    if (this.overrelax_iter != overrelax_iter_new) {
+      this.iter_new_simul = 8;
+      this.overrelax_iter = overrelax_iter_new;
+    }
+    if (this.iter_new_simul >= 0) {
+      this.iter_new_simul--;
+    }
+    if (this.iter_new_simul == 0) {
+      this.system.initialyzeSystem();
+    }
+  }
   reset() {
-    this.system.reset();
+    this.system.initialyzeSystem();
+    this.completed_iter = -1;
+    this.index = 0;
   }
   setup(p5) {
     p5.frameRate(50);
     this.system.parameters.x_0 = p5.width / 2;
+    this.system.initialyzeSystem();
+    if (this.with_overrelax) {
+      this.setupOverrelax(p5);
+    }
+  }
+  setupOverrelax(p5) {
+    {
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+          this.base_name, '1', 'OverRelax Iters');
+      this.slider1 = ui_namespace.createSlider(div_m_1, 1, 10, 9);
+      this.output1 = ui_namespace.createOutput(div_m_2);
+      this.output1.innerHTML = this.slider1.value;
+    }
+    this.slider1.oninput = function() {
+      this.output1.innerHTML = this.slider1.value;
+    }.bind(this);
+    this.overrelax_iter = this.slider1.value;
+
+    {
+      let [div_m_1, div_m_2] =
+          ui_namespace.createDivsForSlider(this.base_name, '2', 'Alpha over');
+      this.slider2 = ui_namespace.createSlider(div_m_1, 1, 2, 20);
+      this.output2 = ui_namespace.createOutput(div_m_2);
+      this.output2.innerHTML = this.slider2.value;
+    }
+    this.slider2.oninput = function() {
+      this.output2.innerHTML = this.slider2.value;
+    }.bind(this);
     this.system.initialyzeSystem();
   }
 };

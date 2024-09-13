@@ -1,5 +1,5 @@
 ---
-title: 1. SPH
+title: 3. FLIP
 author: Роман Козак
 type: docs
 math: true
@@ -7,9 +7,3 @@ toc: true
 sidebar:
   open: true
 ---
-
-## Интро
-
-## Источники
-
-

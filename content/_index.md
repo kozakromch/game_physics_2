@@ -3,6 +3,10 @@ title: "Главная"
 toc: false
 ---
 
+{{< add_script "js/common/ui.js" >}}
+
+
+
 ## Explore
 
 {{< cards >}}

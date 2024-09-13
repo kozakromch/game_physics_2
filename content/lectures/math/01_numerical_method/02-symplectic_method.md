@@ -39,7 +39,7 @@ $\dots$
 Т. е если взять несколько точек в фазовом пространстве, и посмотреть как они двигаются, то они будут двигаться так, что объемы будут сохраняться. Вот здесь например 4 точки с разными начальными условиями в системе с пружинкой и они двигаются по фазовым траекториям.
 Мы как будто следим одновременно за 4 пружинками и рисуем их графики.
 
-{{< image path="images/numerical_method/liouville.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/liouville.excalidraw.png" >}}
 
 А двигаться такая система будет вот так:
 {{< include_sketch path="numerical_method/sketch/analitical_phase_spring.js" base_name="analitical_phase_spring" >}}
@@ -139,7 +139,7 @@ $$
 
 Должно выполняться условие $(\Delta t * w) < 2$ где $w$ -- частота осцилляции. Если мы хотим визуализировать такие осциляции мы в любом случае должны требовать чтобы $\Delta t << w$.  Тк иначе мы просто не увидим этих колебаний.
 
-{{< image path="images/numerical_method/stable_zone_symplectic.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/stable_zone_symplectic.excalidraw.png" >}}
 
 #### Анализ точности
 

@@ -116,7 +116,7 @@ $$
 
 Для устойчивости многомерной системы необходимо, чтобы все собственные значения матрицы 
 $F$ были меньше 1 по модулю. Для метода Эйлера зона устойчивости выглядит так:
-{{< image path="images/numerical_method/stable_zone_forward.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/stable_zone_forward.excalidraw.png" >}}
 
 Самое забавное в этом методе, что вот такая недемпфировання пружинка безусловно неустойчива.
 Те можно уменьшать шаг по времени сколько угодно, но она все равно будет накачиваться энергией и улетать в космос.
@@ -269,7 +269,7 @@ $$
 Получается что локальная ошибка метода Эйлера пропорциональна квадрату шага по времени.
 Глобальная ошибка же пропорциональна числу шагов по времени умноженному на локальную ошибку.
 
-{{< image path="images/numerical_method/accuracy_forward.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/accuracy_forward.excalidraw.png" >}}
 
 
 #### Анализ энергии
@@ -440,7 +440,7 @@ $$
 
 Сразу можно заметить, что зона устойчивости для неявного метода больше
 
-{{< image path="images/numerical_method/stable_zone_backward.excalidraw.png" >}}
+{{< image path="images/math/numerical_method/stable_zone_backward.excalidraw.png" >}}
 
 Подставляя на место $\dot{z}$ обсужденное выше приближенное значение, получим следующие равенствo для неявной$(2)$ схем:
 $$
