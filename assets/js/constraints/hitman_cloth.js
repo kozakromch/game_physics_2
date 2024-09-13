@@ -6,8 +6,8 @@ var hitman_relax_namespace = {};
 hitman_relax_namespace.Parameters = class {
   constructor() {
     this.m = 3.0;
-    this.g = 3000.;
-    this.num_points = 15;
+    this.g = 1500.;
+    this.num_points = 50;
     this.width = 500;
     this.height = 300;
     this.dt = 0.02;
@@ -88,6 +88,9 @@ hitman_relax_namespace.System = class {
 
     this.simulateSphere(width);
     this.relaxAllCollisions(width);
+    this.relaxAllSpringConstraints(alpha_relax, false);
+    this.relaxAllSpringConstraints(alpha_relax, false);
+
     this.verlet();
     for (let i = 0; i < this.relax_iter; i++) {
       this.relaxFixedPoints();
@@ -221,8 +224,8 @@ hitman_relax_namespace.System = class {
     }
   }
 
-  relaxAllSpringConstraints(alpha_relax) {
-    this.removeStretchedConstraints();
+  relaxAllSpringConstraints(alpha_relax, is_remove = true) {
+    if (is_remove) this.removeStretchedConstraints();
     for (let i = this.spring_constraints.length - 1; i >= 0; i--) {
       this.relaxOneConstraint(i, alpha_relax);
     }
@@ -281,7 +284,7 @@ hitman_relax_namespace.Visualizator = class {
   constructor(with_floor) {
     this.with_floor = with_floor;
   }
-  draw(p5, system, color_scheme, radius = 12) {
+  draw(p5, system, color_scheme, radius = 8) {
     // draw floor
     if (this.with_floor) {
       let lg = color_scheme.GROUND(p5);
@@ -349,10 +352,10 @@ hitman_relax_namespace.SimulationInterface = class {
     }
 
     let relax_iter = this.slider1.value;
-    let alpha = this.slider2.value/ 100;
+    let alpha = this.slider2.value / 100;
     this.system.simulate(
         relax_iter, is_mouse, mouse_x, mouse_y, p5.width, alpha);
-    this.visualizator.draw(p5, this.system, color_scheme, 10);
+    this.visualizator.draw(p5, this.system, color_scheme, 6);
   }
   setup(p5) {
     {
