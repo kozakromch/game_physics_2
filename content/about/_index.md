@@ -15,3 +15,7 @@ type: about
 - [excalidraw](https://excalidraw.com/)
 - [hugo](https://gohugo.io/)
 - [hextra](https://imfing.github.io/hextra/)
+
+
+## Источники
+[Книга Game Physics](http://lib.ysu.am/open_books/311975.pdf)

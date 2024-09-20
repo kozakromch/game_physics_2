@@ -4,7 +4,7 @@
 {{ $js := resources.Get $abs_sketch_path | resources.Minify }}
 
 <p></p>
-<div class="hx-mx-auto" style="max-width: 500px;" id={{ (printf "%s%s" $base_name "_base_id" ) }}>
+<div class="hx-mx-auto" style="max-width: 500px; touch-action: none" id={{ (printf "%s%s" $base_name "_base_id" ) }}>
     <div class="hx-overflow-hidden hx-border hx-border-gray-200 hx-rounded-lg  dark:hx-border-neutral-700">
         <button type="button" class="hx-mr-2 hx-rounded-t hx-p-1 hx-font-medium" id={{ (printf "%s%s"
             $base_name "_stop_button_id" ) }}>Start</button>

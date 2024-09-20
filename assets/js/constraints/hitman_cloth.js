@@ -337,7 +337,7 @@ hitman_relax_namespace.SimulationInterface = class {
     this.visualizator = new hitman_relax_namespace.Visualizator(true);
     this.iter_new_simul = -1;
   }
-  iter(p5) {
+  mouseLogic(p5) {
     // get from p5 mouse position
     let mouse_x = p5.mouseX;
     let mouse_y = p5.mouseY;
@@ -350,7 +350,10 @@ hitman_relax_namespace.SimulationInterface = class {
     if (p5.mouseIsPressed == false) {
       is_mouse = false;
     }
-
+    return [is_mouse, mouse_x, mouse_y];
+  }
+  iter(p5) {
+    let [is_mouse, mouse_x, mouse_y] = this.mouseLogic(p5);
     let relax_iter = this.slider1.value;
     let alpha = this.slider2.value / 100;
     this.system.simulate(

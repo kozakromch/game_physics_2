@@ -1,7 +1,7 @@
 let color_scheme = {};
 
 color_scheme.BACKGROUND = function(p5) {
-  return p5.color(245, 245, 249, 255)
+  return p5.color(244, 244, 248, 255)
 };
 color_scheme.GREEN = function(p5) {
   return p5.color(83, 230, 90, 255)

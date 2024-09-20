@@ -9,15 +9,10 @@ toc: true
 math: true
 ---
 
+## Intro
+
 Собственно, нам всегда нужно знать когда объекты сталкиваются, касаются или пересекаются друг с другом. В этом разделе мы рассмотрим разные алгоритмы, которые позволяют нам это делать.
 
-<p></p>
-<div class="not-prose">
-<div class="container">
-<div class="row">
-  <div class="col" style="margin-top: 3%;">
-  {{< card link="broadphase" title="Broadphase" image="images/collisions/broadphase/main.excalidraw.png" icon="book-open" >}}
-  </div>
- 
-</div>
-</div>
+## Источники
+
+1. [Real-Time Collision Detection](https://www.r-5.org/files/books/computers/algo-list/realtime-3d/Christer_Ericson-Real-Time_Collision_Detection-EN.pdf)

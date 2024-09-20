@@ -29,6 +29,7 @@ main_visualizator_namespace.getMainVisualizator = function(
       }
     };
     p5.setup = function() {
+      p5.disableFriendlyErrors = true;
       p5.frameRate(30);
       canvas = p5.createCanvas(
           base_vis.width, base_vis.height, p5.P2D, base_vis.canvas);
