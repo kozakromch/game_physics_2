@@ -419,7 +419,7 @@ all_pairs_namespace.System = class {
         this.fixWallAllPoints();
         let all_ok = false;
         if (this.hash_type == 'brute_force') {
-           all_ok = this.relaxAllPoints;
+           all_ok = this.relaxAllPoints();
         }
         if (this.hash_type == 'uniform_grid_vector') {
           all_ok = this.relaxAllPointsUniformGridVector(true);
