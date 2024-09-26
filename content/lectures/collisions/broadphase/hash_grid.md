@@ -9,6 +9,14 @@ toc: true
 math: true
 ---
 
+{{< add_script "js/collisions/broadphase/hash_vector.js" >}}
+
+
+
+{{< include_sketch path="collisions/broadphase/sketch/hash_vector_algo.js" base_name="hash_vector_algo" >}}
+
+
+
 ## Intro
 
 Для того чтобы уменьшить количество проверок коллизий, можно использовать попробовать реализовать простую идею -- нам нет смысла проверять объекты, которые находятся далеко друг от друга.
