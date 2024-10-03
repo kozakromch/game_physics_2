@@ -5,7 +5,7 @@ stable_fluids_namespaces.parameters = class {
   constructor() {
     this.n_y = 200;
     this.n_x = 200;
-    this.dt = 0.02;
+    this.dt = 0.01;
     this.diff = 0.0001;
     this.visc = 0.0001;
     this.gs_iters = 6;
@@ -40,9 +40,6 @@ stable_fluids_namespaces.System = class {
 
   addSource(x, s, dt) {
     return;
-    for (let i = 0; i < this.n_elem; i++) {
-      x[i] += dt * s[i];
-    }
   }
   setBnd(b, x) {
     for (let i = 1; i <= this.P.n_x; i++) {
@@ -65,14 +62,11 @@ stable_fluids_namespaces.System = class {
   }
   diffusion(b, x, x0, diff, dt) {
     let a = dt * diff * this.P.n_x * this.P.n_y;
-    let invFactor = 1 / (1 + 4 * a); // Precompute this value
+    let invFactor = 1 / (1 + 4 * a); 
 
-    // Main loop with loop unrolling
     for (let k = 0; k < this.P.gs_iters; k++) {
-      // Optimize for inner grid points (without boundary)
       for (let i = 1; i <= this.P.n_x; i++) {
         for (let j = 1; j <= this.P.n_y; j += 2) {
-          // Unrolling two iterations at once to reduce loop overhead
           let idx1 = this.at(i, j);
           let idx2 = this.at(i, j + 1);
 
@@ -97,7 +91,6 @@ stable_fluids_namespaces.System = class {
           }
         }
       }
-      // Update boundaries only once per iteration
       this.setBnd(b, x);
     }
   }
@@ -216,21 +209,18 @@ stable_fluids_namespaces.System = class {
     if (is_mouse) {
       const multiplier = 3;
       const size = 3;
-      // Map mouse_x, mouse_y to grid coordinates
       let grid_x = Math.floor((mouse_x / width) * this.P.n_x);
       let grid_y = Math.floor((mouse_y / height) * this.P.n_y);
-      // Add density to the grid
       for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
           let x = this.clamp(grid_x + i, 1, this.P.n_x);
           let y = this.clamp(grid_y + j, 1, this.P.n_y);
           this.dens[this.at(x, y)] += 4;
-          this.u[this.at(x, y)] += v_mouse_x * multiplier; // Add velocity to the right
-          this.v[this.at(x, y)] += v_mouse_y * multiplier; // Add velocity downward
+          this.u[this.at(x, y)] += v_mouse_x * multiplier; 
+          this.v[this.at(x, y)] += v_mouse_y * multiplier; 
         }
       }
     }
-    // console.log(this.v);
     this.velStep(
       this.u,
       this.v,
@@ -278,13 +268,11 @@ stable_fluids_namespaces.Visualizer = class {
     const scale_x_frac = scale_x - scale_x_int;
     const scale_y_frac = scale_y - scale_y_int;
 
-    // Cache dimensions
     const scale_y_step = scale_y_int + scale_y_frac;
     const scale_x_step = scale_x_int + scale_x_frac;
 
-    this.buffer.loadPixels(); // Load the pixel array of the buffer
+    this.buffer.loadPixels();
 
-    // Iterate over the fluid grid
     for (let i = 0; i < n_x_plus_2; i++) {
       const x_start = Math.floor(i * scale_x_step);
       const x_end = x_start + scale_x_int + (i < system.P.n_x ? 1 : 0);
@@ -293,7 +281,6 @@ stable_fluids_namespaces.Visualizer = class {
         const idx = system.at(i, j);
         const dens = Math.floor(system.dens[idx] * 255);
 
-        // Skip updating if density is unchanged
         if (this.dens_prev && this.dens_prev[idx] === dens) {
           continue;
         }
@@ -305,33 +292,30 @@ stable_fluids_namespaces.Visualizer = class {
         const y_start = Math.floor(j * scale_y_step);
         const y_end = y_start + scale_y_int + (j < system.P.n_y ? 1 : 0);
 
-        // Precompute y-offset to avoid recalculating it in the inner loop
         const y_base = 4 * scaled_width;
 
         for (let y = y_start; y < y_end; y++) {
           const y_mul = y * y_base;
 
-          // Avoid repeated memory accesses to `pixels` by minimizing the pixel index calculation
           for (let x = x_start; x < x_end; x++) {
             const index = 4 * x + y_mul;
             this.buffer.pixels[index] = dens*0.3;
             this.buffer.pixels[index + 1] = dens*0.6;
             this.buffer.pixels[index + 2] = dens*0.8;
-            this.buffer.pixels[index + 3] = 255; // Full alpha
+            this.buffer.pixels[index + 3] = 255; 
           }
         }
       }
     }
 
-    this.buffer.updatePixels(); // Apply the changes
+    this.buffer.updatePixels();
     p5.image(this.buffer, 0, 0);
 
     if (!this.dens_prev) {
-      this.dens_prev = new Float32Array(system.dens); // Cache the density array
+      this.dens_prev = new Float32Array(system.dens);
     }
   }
 
-  // simple draw of velocity without any optimization. Just p5.rect
   drawVelocity(p5, system) {
     p5.stroke(255);
     p5.strokeWeight(1);
