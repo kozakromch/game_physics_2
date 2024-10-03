@@ -119,7 +119,7 @@ hard_ball_namespace.System = class {
   }
 };
 
-hard_ball_namespace.Visializer = class {
+hard_ball_namespace.Visualizer = class {
   constructor(system) {
     this.spring_sinusoidals = [];
     for (let i = 0; i < system.spring_constraints.length; i++) {
@@ -155,7 +155,7 @@ hard_ball_namespace.Visializer = class {
 hard_ball_namespace.HardBallInterface = class {
   constructor() {
     this.hard_ball = new hard_ball_namespace.System();
-    this.hard_ball_vis = new hard_ball_namespace.Visializer(this.hard_ball);
+    this.hard_ball_vis = new hard_ball_namespace.Visualizer(this.hard_ball);
     this.base_name = 'hard_ball_sketch';
   }
   iter(p5) {

@@ -1,5 +1,5 @@
 ---
-title: 2. Uniform Grid
+title: 2. Spatial Grid
 author: Роман Козак
 credential:
 type: docs
@@ -8,14 +8,6 @@ next:
 toc: true
 math: true
 ---
-
-{{< add_script "js/collisions/broadphase/hash_vector.js" >}}
-
-
-
-{{< include_sketch path="collisions/broadphase/sketch/hash_vector_algo.js" base_name="hash_vector_algo" >}}
-
-
 
 ## Intro
 
@@ -185,6 +177,12 @@ math: true
 
 Чтобы всегда можно было понять сколько элементов в ячейке, мы и добавляли дополнительную ячейку в массив частичных сумм.
 В принципе можно было обойтись и без него.
+
+Я тут попытался сделать анимацию, но что-то не очень получилось. Как-нибудь попробую снова)
+{{< add_script "js/collisions/broadphase/hash_vector.js" >}}
+{{< include_sketch path="collisions/broadphase/sketch/hash_vector_algo.js" base_name="hash_vector_algo" >}}
+
+А вот собственно и результат. У меня работает супер быстро.
 
 {{< include_sketch path="collisions/broadphase/sketch/hash_vector_sketch.js" base_name="hash_vector_sketch" >}}
 

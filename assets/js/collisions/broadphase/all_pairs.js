@@ -595,7 +595,7 @@ all_pairs_namespace.System = class {
   }
 };
 
-all_pairs_namespace.Visializer = class {
+all_pairs_namespace.Visualizer = class {
   constructor(method) {
     this.method = method;
   }
@@ -675,7 +675,7 @@ all_pairs_namespace.AllPairsInterface = class {
     // this.system = new all_pairs_namespace.System("uniform_grid_vector");
     this.system = new all_pairs_namespace.System(method);
     // this.system = new all_pairs_namespace.System("hash_vector");
-    this.visualizer = new all_pairs_namespace.Visializer(method);
+    this.visualizer = new all_pairs_namespace.Visualizer(method);
     this.base_name = base_name;
   }
   mouseLogic(p5) {
