@@ -6,6 +6,6 @@ import p5 from '../../../../js/libs/p5.min.js';
   let my_interface = new all_pairs_namespace.AllPairsInterface(
       'uniform_grid_vector_sketch', 'uniform_grid_vector');
   let main_visualizator =
-      main_visualizator_namespace.getMainVisualizator(my_interface);
+      main_visualizator_namespace.getMainVisualizator(my_interface, true);
   new p5(main_visualizator);
 }

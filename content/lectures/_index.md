@@ -3,6 +3,7 @@ title: Разделы
 author: Роман Козак
 type: docs
 ---
+
 <p></p>
 <div class="not-prose">
 <div class="container">
@@ -18,8 +19,8 @@ type: docs
     <div class="col" style="margin-top: 3%;">
   {{< card link="collisions" title="Коллизии" image="images/collisions/collisions.excalidraw.png" icon="book-open" >}}
     </div>
+    <div class="col" style="margin-top: 3%;">
+  {{< card link="fluids" title="Жидкости" image="images/fluids/main.excalidraw.png" icon="book-open" >}}
+    </div>
 </div>
 </div>
-
-
-

@@ -200,7 +200,7 @@ three_body_namespace.ThreeBodyInterface = class {
     this.r_3 = this.getRadius(this.three_body.m3);
     this.scale = 100;
   }
-  draw_history(p5, history, color, radius) {
+  drawHistory(p5, history, color, radius) {
     let trajectory = [];
     for (let i = 0; i < history.length; i++) {
       trajectory.push({
@@ -230,9 +230,9 @@ three_body_namespace.ThreeBodyInterface = class {
     const c_1 = p5.color(color_scheme.RED(p5));
     const c_2 = p5.color(color_scheme.GREEN(p5));
     const c_3 = p5.color(color_scheme.BLUE(p5));
-    this.draw_history(p5, this.three_body.history1, c_1, this.r_1);
-    this.draw_history(p5, this.three_body.history2, c_2, this.r_2);
-    this.draw_history(p5, this.three_body.history3, c_3, this.r_3);
+    this.drawHistory(p5, this.three_body.history1, c_1, this.r_1);
+    this.drawHistory(p5, this.three_body.history2, c_2, this.r_2);
+    this.drawHistory(p5, this.three_body.history3, c_3, this.r_3);
     // draw circle for each body
     this.drawCircle(p5, this.three_body.x1, this.three_body.y1, c_1, this.r_1);
     this.drawCircle(p5, this.three_body.x2, this.three_body.y2, c_2, this.r_2);

@@ -1,7 +1,13 @@
+---
+published: false
+---
+
 ## Linear equations solvers
 
 Gauss-Seidel 
 Про это много где
+
+Jacobi
 
 PGS популяризировали в Hitman
 Одна из первых книг это упоминается в контексте решения LCP

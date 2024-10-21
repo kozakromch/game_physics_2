@@ -1,3 +1,5 @@
+import ui_namespace from '../../../js/common/ui.min.js';
+
 //stable fluids by Jos Stam
 let stable_fluids_namespaces = {};
 
@@ -6,8 +8,8 @@ stable_fluids_namespaces.parameters = class {
     this.n_y = 200;
     this.n_x = 200;
     this.dt = 0.01;
-    this.diff = 0.0001;
-    this.visc = 0.0001;
+    this.diff = 0.00001;
+    this.visc = 0.00001;
     this.gs_iters = 6;
   }
 };
@@ -62,7 +64,7 @@ stable_fluids_namespaces.System = class {
   }
   diffusion(b, x, x0, diff, dt) {
     let a = dt * diff * this.P.n_x * this.P.n_y;
-    let invFactor = 1 / (1 + 4 * a); 
+    let invFactor = 1 / (1 + 4 * a);
 
     for (let k = 0; k < this.P.gs_iters; k++) {
       for (let i = 1; i <= this.P.n_x; i++) {
@@ -182,8 +184,8 @@ stable_fluids_namespaces.System = class {
     this.fadeDens();
   }
   velStep(u, v, u0, v0, visc, dt) {
-    this.addSource(u, u0, dt);
-    this.addSource(v, v0, dt);
+    // this.addSource(u, u0, dt);
+    // this.addSource(v, v0, dt);
     this.swap(u0, u);
     this.diffusion(1, u, u0, visc, dt);
     this.swap(v0, v);
@@ -215,9 +217,9 @@ stable_fluids_namespaces.System = class {
         for (let j = 0; j < size; j++) {
           let x = this.clamp(grid_x + i, 1, this.P.n_x);
           let y = this.clamp(grid_y + j, 1, this.P.n_y);
-          this.dens[this.at(x, y)] += 4;
-          this.u[this.at(x, y)] += v_mouse_x * multiplier; 
-          this.v[this.at(x, y)] += v_mouse_y * multiplier; 
+          this.dens[this.at(x, y)] += 6;
+          this.u[this.at(x, y)] += v_mouse_x * multiplier;
+          this.v[this.at(x, y)] += v_mouse_y * multiplier;
         }
       }
     }
@@ -238,6 +240,12 @@ stable_fluids_namespaces.System = class {
       this.P.dt
     );
   }
+  measurePressure() {
+    let p = new Float32Array(this.n_elem);
+    let div = new Float32Array(this.n_elem);
+    this.project(this.u, this.v, p, div);
+    return p;
+  }
 };
 stable_fluids_namespaces.Visualizer = class {
   constructor(system) {
@@ -251,10 +259,90 @@ stable_fluids_namespaces.Visualizer = class {
   }
 
   draw(p5, system) {
-    this.drawSystem(p5, system);
+    this.drawDensity(p5, system);
+    // this.drawPressure(p5, system);
     this.fps(p5);
   }
-  drawSystem(p5, system) {
+  // draw Pressure using scientific color map
+  scientificColorMap(pressure) {
+      // scientific color map
+      let r = 0;
+      let g = 0;
+      let b = 0;
+      if (pressure < 64) {
+        r = 0;
+        g = 0;
+        b = pressure * 4;
+      } else if (pressure < 128) {
+        r = 0;
+        g = (pressure - 64) * 4;
+        b = 255;
+      } else if (pressure < 192) {
+        r = 0;
+        g = 255;
+        b = 255 - (pressure - 128) * 4;
+      } else {
+        r = (pressure - 192) * 4;
+        g = 0;
+        b = 0;
+      }
+      return [r, g, b];
+  }
+  drawPressure(p5, system) {
+    this.initBuffer(p5, p5.width, p5.height);
+    const pressures = system.measurePressure();
+    const d = this.buffer.pixelDensity();
+    const scaled_width = p5.width * d;
+    const scaled_height = p5.height * d;
+    const n_x_plus_2 = system.P.n_x + 2;
+    const n_y_plus_2 = system.P.n_y + 2;
+    const scale_x = scaled_width / n_x_plus_2;
+    const scale_y = scaled_height / n_y_plus_2;
+    const scale_x_int = Math.floor(scale_x);
+    const scale_y_int = Math.floor(scale_y);
+    const scale_x_frac = scale_x - scale_x_int;
+    const scale_y_frac = scale_y - scale_y_int;
+
+    const scale_y_step = scale_y_int + scale_y_frac;
+    const scale_x_step = scale_x_int + scale_x_frac;
+
+    this.buffer.loadPixels();
+
+    for (let i = 0; i < n_x_plus_2; i++) {
+      const x_start = Math.floor(i * scale_x_step);
+      const x_end = x_start + scale_x_int + (i < system.P.n_x ? 1 : 0);
+
+      for (let j = 0; j < n_y_plus_2; j++) {
+        const idx = system.at(i, j);
+        const p = pressures[idx];
+        const pressure = Math.floor((p*80 + 1) * 125);
+        const [r, g, b] = this.scientificColorMap(pressure);
+
+        const y_start = Math.floor(j * scale_y_step);
+        const y_end = y_start + scale_y_int + (j < system.P.n_y ? 1 : 0);
+
+        const y_base = 4 * scaled_width;
+
+        for (let y = y_start; y < y_end; y++) {
+          const y_mul = y * y_base;
+
+          for (let x = x_start; x < x_end; x++) {
+            const index = 4 * x + y_mul;
+            this.buffer.pixels[index] = r;
+            this.buffer.pixels[index + 1] = g;
+            this.buffer.pixels[index + 2] = b;
+            this.buffer.pixels[index + 3] = 255;
+          }
+        }
+      }
+    }
+
+    this.buffer.updatePixels();
+    p5.image(this.buffer, 0, 0);
+
+  }
+
+  drawDensity(p5, system) {
     this.initBuffer(p5, p5.width, p5.height);
     const d = this.buffer.pixelDensity();
     const scaled_width = p5.width * d;
@@ -299,10 +387,10 @@ stable_fluids_namespaces.Visualizer = class {
 
           for (let x = x_start; x < x_end; x++) {
             const index = 4 * x + y_mul;
-            this.buffer.pixels[index] = dens*0.3;
-            this.buffer.pixels[index + 1] = dens*0.6;
-            this.buffer.pixels[index + 2] = dens*0.8;
-            this.buffer.pixels[index + 3] = 255; 
+            this.buffer.pixels[index] = dens * 0.3;
+            this.buffer.pixels[index + 1] = dens * 0.6;
+            this.buffer.pixels[index + 2] = dens * 0.8;
+            this.buffer.pixels[index + 3] = 255;
           }
         }
       }
@@ -316,18 +404,6 @@ stable_fluids_namespaces.Visualizer = class {
     }
   }
 
-  drawVelocity(p5, system) {
-    p5.stroke(255);
-    p5.strokeWeight(1);
-    for (let i = 1; i <= system.P.n_x; i += 4) {
-      for (let j = 1; j <= system.P.n_y; j += 4) {
-        let x = (i * p5.width) / (system.P.n_x + 2);
-        let y = (j * p5.height) / (system.P.n_y + 2);
-        let idx = system.at(i, j);
-        p5.line(x, y, x + system.u[idx] * 10, y + system.v[idx] * 10);
-      }
-    }
-  }
   fps(p5) {
     p5.fill(255);
     p5.noStroke();
@@ -343,25 +419,9 @@ stable_fluids_namespaces.Interface = class {
     this.visualizer = new stable_fluids_namespaces.Visualizer(this.system);
     this.base_name = base_name;
   }
-  mouseLogic(p5) {
-    let mouse_x = p5.mouseX;
-    let mouse_y = p5.mouseY;
-    let is_mouse = true;
-    if (
-      mouse_x < 0 ||
-      mouse_x > p5.width ||
-      mouse_y < 0 ||
-      mouse_y > p5.height
-    ) {
-      is_mouse = false;
-    }
-    if (p5.mouseIsPressed == false) {
-      is_mouse = false;
-    }
-    return [is_mouse, mouse_x, mouse_y];
-  }
+
   iter(p5) {
-    let [is_mouse, mouse_x, mouse_y] = this.mouseLogic(p5);
+    let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
     let v_mouse_x = p5.mouseX - p5.pmouseX;
     let v_mouse_y = p5.mouseY - p5.pmouseY;
     this.system.calcSystem(

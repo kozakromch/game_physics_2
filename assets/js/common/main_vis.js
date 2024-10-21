@@ -5,6 +5,7 @@ import sc_grid_namespace from "./sc_grid.min.js";
 let main_visualizator_namespace = {};
 main_visualizator_namespace.getMainVisualizator = function (
   custom_interface,
+  is_interactive = false,
   with_background = true,
   with_ground = true
 ) {
@@ -36,6 +37,26 @@ main_visualizator_namespace.getMainVisualizator = function (
         p5.background(5, 5);
       }
     };
+    let draw_interactive = function () {
+      let text_size = 0.03 * p5.width;
+      p5.textSize(text_size);
+      let text = "Sketch is interactive";
+      let text_width = p5.textWidth(text);
+      let text_height = p5.textAscent() + p5.textDescent();
+      let text_x = p5.width / 2 - text_width / 2;
+      let text_y = p5.height/2;
+      let extra = text_height/2;
+      p5.fill(255, 255, 255, 10);
+      p5.rect(
+        text_x - extra,
+        text_y - text_height, 
+        text_width + 2 * extra,
+        text_height + extra, 20
+      );
+      p5.fill(0);
+      p5.text(text, text_x, text_y);
+      p5.textSize(15);
+    };
     p5.setup = function () {
       p5.disableFriendlyErrors = true;
       p5.frameRate(30);
@@ -51,6 +72,9 @@ main_visualizator_namespace.getMainVisualizator = function (
     p5.draw = function () {
       if (base_vis.is_paused) {
         draw_pause();
+        if (is_interactive) {
+        draw_interactive();
+        }
       } else {
         draw_iter(p5);
       }

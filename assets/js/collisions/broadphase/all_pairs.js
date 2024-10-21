@@ -401,7 +401,7 @@ all_pairs_namespace.System = class {
       this.hash = new HashVector(4.0 * this.max_radius, n_points);
     }
   }
-  async calcSystem(is_mouse, mouse_x, mouse_y) {
+  calcSystem(is_mouse, mouse_x, mouse_y) {
     for (let step = 0; step < this.parameters.sub_steps; step++) {
       this.t += this.parameters.dt;
       this.calcPoints(is_mouse, mouse_x, mouse_y);
@@ -671,30 +671,12 @@ all_pairs_namespace.Visualizer = class {
 all_pairs_namespace.AllPairsInterface = class {
   constructor(base_name, method) {
     this.method = method;
-    // this.system = new all_pairs_namespace.System("brute_force");
-    // this.system = new all_pairs_namespace.System("uniform_grid_vector");
     this.system = new all_pairs_namespace.System(method);
-    // this.system = new all_pairs_namespace.System("hash_vector");
     this.visualizer = new all_pairs_namespace.Visualizer(method);
     this.base_name = base_name;
   }
-  mouseLogic(p5) {
-    // get from p5 mouse position
-    let mouse_x = p5.mouseX;
-    let mouse_y = p5.mouseY;
-    // if left mouse button is pressed
-    let is_mouse = true;
-    if (mouse_x < 0 || mouse_x > p5.width || mouse_y < 0 ||
-        mouse_y > p5.height) {
-      is_mouse = false;
-    }
-    if (p5.mouseIsPressed == false) {
-      is_mouse = false;
-    }
-    return [is_mouse, mouse_x, mouse_y];
-  }
   iter(p5) {
-    let [is_mouse, mouse_x, mouse_y] = this.mouseLogic(p5);
+    let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
     this.newSimulation();
     this.system.calcSystem(is_mouse, mouse_x, mouse_y);
     this.visualizer.draw(p5, this.system);

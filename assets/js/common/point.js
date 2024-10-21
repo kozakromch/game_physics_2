@@ -22,6 +22,15 @@ point_namespace.VerletPoint = class {
   }
 };
 
+point_namespace.Spring = class {
+  constructor(point1, point2, distance, stiffness, damping) {
+    this.point1 = point1;
+    this.point2 = point2;
+    this.distance = distance;
+    this.stiffness = stiffness;
+    this.damping = damping;
+  }
+};
 point_namespace.SpringConstraint = class {
   constructor(point1, point2, distance) {
     this.point1 = point1;

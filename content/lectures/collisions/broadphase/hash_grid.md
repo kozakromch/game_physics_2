@@ -186,6 +186,8 @@ math: true
 
 {{< include_sketch path="collisions/broadphase/sketch/hash_vector_sketch.js" base_name="hash_vector_sketch" >}}
 
+## Заключение
+Собственно все. Все это отличные методы, чтобы ускорить проверку. Если у вас они примерно одинакового размера, то будет хорошо работать
 
 ## Источники 
 - Очень хороший [видос](https://www.youtube.com/watch?v=9IULfQH7E90) от Pezzza's Work про Uniform Grid
