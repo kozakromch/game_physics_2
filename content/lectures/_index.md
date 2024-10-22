@@ -4,6 +4,8 @@ author: Роман Козак
 type: docs
 ---
 
+{{< add_script "js/common/ui.js" >}}
+
 <p></p>
 <div class="not-prose">
 <div class="container">
