@@ -55,4 +55,4 @@ params:
   
 services:
   googleAnalytics:
-    ID: G-WSKGF9XQPX
+    ID: "G-WSKGF9XQPX"
