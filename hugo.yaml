@@ -53,6 +53,6 @@ params:
     enable: true
     base: "https://github.com/kozakromch/game_physics_2/tree/main/content"
   
-  services:
+services:
   googleAnalytics:
     ID: G-WSKGF9XQPX

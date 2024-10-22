@@ -1,5 +1,5 @@
 ---
-title: 5. Мягкие ограничения
+title: 5. Пружинки Будды
 author: Роман Козак
 type: docs
 prev: docs/first-page
