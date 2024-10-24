@@ -2,7 +2,7 @@ import color_scheme from '../../js/common/color_scheme.min.js';
 import point_namespace from '../../js/common/point.min.js';
 import ui_namespace from '../../js/common/ui.min.js';
 
-var hitman_relax_namespace = {};
+let hitman_relax_namespace = {};
 hitman_relax_namespace.Parameters = class {
   constructor() {
     this.m = 3.0;

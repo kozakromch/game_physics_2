@@ -3,7 +3,7 @@ import point_namespace from '../../js/common/point.min.js';
 import sinusoidal_namespace from '../../js/common/sinusoidal_vis.min.js';
 import ui_namespace from '../../js/common/ui.min.js';
 
-var hard_ball_namespace = {};
+let hard_ball_namespace = {};
 hard_ball_namespace.Parameters = class {
   constructor() {
     this.m = 3.0;

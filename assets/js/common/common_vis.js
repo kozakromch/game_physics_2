@@ -72,7 +72,7 @@ common_vis_namespace.alphaCircle = function(
   // draw a circle with a changing color and radius
   for (let i = 0; i < trajectory.length - 1; i++) {
     // Set the alpha value for the current segment
-    p5.no_stroke;
+    p5.noStroke();
     p5.fill(
         color_from.levels[0] + increment_0 * i,
         color_from.levels[1] + increment_1 * i,

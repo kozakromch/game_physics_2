@@ -16,3 +16,5 @@ PGS популяризировали в Hitman
 [Краткое описание солверов](https://box2d.org/posts/2024/02/solver2d/)
 
 TGS  Описали в XPBD, придумали название в PhysX
+
+SOR - succsesive over relaxation

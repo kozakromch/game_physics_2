@@ -5,7 +5,7 @@ import sinusoidal_namespace from "../../js/common/sinusoidal_vis.min.js";
 import ui_namespace from "../../js/common/ui.min.js";
 import common_vis_namespace from "../../js/common/common_vis.min.js";
 
-var double_pendulum = {};
+let double_pendulum = {};
 double_pendulum.Parameters = class {
   constructor() {
     this.inv_m0 = 0;
