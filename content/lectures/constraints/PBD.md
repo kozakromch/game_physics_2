@@ -148,7 +148,6 @@ C(\vec{p_1}) = \vec{p_1}\cdot \vec{n} = 0
 \end{equation}
 $$
 
-
 ### Коллизии
 
 Коллизии в PBD разрешаются в несколько этапов. 
@@ -176,14 +175,55 @@ $$
 Теперь нужно разобраться как разрешать коллизии между двумя динамическими объектами.
 
 Сначала в 2D. Вот шарик летит в систему шариков. 
-Если он попал в другой шарик, то тут ничего придумывать не надо, коллизия шариков записывается просто как $C(\vec{p_1}, \vec{p_2}) = r_1 + r_2 - |\vec{p_1} - \vec{p_2}|$.
 
-Если он попал в связь между шариками, то наша задача оставить шарик на нужной правильной полуплоскости.
+Если он попал в связь между шариками, то наша задача выдавить шарик в правильную полуплоскости.
 
+{{< image path="images/constraints/pbd/collision_dynamic.excalidraw.png" >}}
 
+Ограничение коллизии между шариком $\vec{p_1}$ и линией образованной двумя другими шариками $\vec{p_2}$ и $\vec{p_3}$ можно описать вот так:
 
+$$
+\begin{equation}
+\begin{split}
+&\vec{m_p} = \vec{p_1} + \frac{(\vec{p_2} - \vec{p_1}) \cdot (\vec{p_3} - \vec{p_1})}{||\vec{p_2} - \vec{p_1}||^2} \cdot (\vec{p_2} - \vec{p_1}) \\\
+&\vec{d} = \vec{m_p} - \vec{p_1} \\\
+&C(\vec{p_1}, \vec{p_2}, \vec{p_3}) = ||\vec{d}|| = 0
+\end{split}
+\end{equation}
+$$
+
+Это просто расстояние от точки до прямой. 
+Если есть какой-то радиус у точки, то нужно учитывать полуплоскость в которую нужно выдавить точку. От этого зависит знак в ограничении.
+$$
+\begin{equation}
+C(\vec{p_1}, \vec{p_2}, \vec{p_3}) = \pm ||\vec{d}|| - R = 0
+\end{equation}
+$$
+
+Теперь в 3d. 
+
+Идея та же самая, просто вместо прямой у нас плоскость из трех точек.
+
+{{< image path="images/constraints/pbd/collision_dynamic_3d.excalidraw.png" >}}
+
+Мы должны держать точку 1 на расстоянии $R$ от плоскости образованной точками 2, 3 и 4.
+Ограничение будет вот таким:
+$$
+\begin{equation}
+\begin{split}
+&\vec{n} = [(\vec{p_3} − \vec{p_2}) \times (\vec{p_4} − \vec{p_2})] \\\
+&C(\vec{p_1},\vec{p_2},\vec{p_3},\vec{p_4}) = \pm (\vec{p_1}−\vec{p_2}) \cdot \vec{n} - R = 0 
+\end{split}
+\end{equation}
+$$
+
+#### Разрешение коллизий по скоростям
+
+Для того чтобы было ощущение столкновения, нужно правильно изменить скорости точек. 
+
+Для точки и мягкого тела это можно сделать просто. 
 
 ## Источники
 
-- [Position Based Dynamics](https://matthias-research.github.io/pages/publications/posBasedDyn.pdf)
+- Оригинальная статья [Position Based Dynamics](https://matthias-research.github.io/pages/publications/posBasedDyn.pdf)
 - Хороший видос с объяснением [Position Based Dynamics](https://www.youtube.com/watch?v=fH3VW9SaQ_c)

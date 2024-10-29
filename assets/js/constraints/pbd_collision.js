@@ -1,85 +1,72 @@
-import color_scheme from '../../js/common/color_scheme.min.js';
-import point_namespace from '../../js/common/point.min.js';
-import ui_namespace from '../../js/common/ui.min.js';
+import color_scheme from "../../js/common/color_scheme.min.js";
+import point_namespace from "../../js/common/point.min.js";
+import ui_namespace from "../../js/common/ui.min.js";
 
-let hitman_relax_namespace = {};
-hitman_relax_namespace.Parameters = class {
+let pbd_collision = {};
+class Parameters {
   constructor() {
     this.m = 3.0;
-    this.g = -3000.;
-    this.num_points = 20;
-    this.radius = 60.;
-    this.x_0 = 250.;
-    this.y_0 = 150.;
-    this.vx_0 = 0.;
-    this.vy_0 = 0.;
+    this.g = -30;
     this.dt = 0.02;
-    this.floor = 180;
+    this.floor = 10;
   }
-};
-hitman_relax_namespace.System = class {
-  constructor(with_floor) {
-    this.relax_iter = 100;
-    this.simul_iter = 1;
-    this.with_floor = with_floor;
-    this.parameters = new hitman_relax_namespace.Parameters();
-    this.min_index = -1;
+}
+
+class Object {
+  constructor(x_0, y_0, n_points, radius) {
+    this.n_points = n_points;
+    this.radius = radius;
+    let point_0 = new point_namespace.VerletPoint(x_0, y_0, 0, 0, 0, 0);
+    this.points = [];
+    point_namespace.pointCircle(this.points, point_0, n_points, radius);
+    this.border = [];
+    this.spring_constraints = [];
+    this.addSpringConstraint(this.border, 1);
+    this.addSpringConstraint(this.spring_constraints, 1);
+    this.addSpringConstraint(this.spring_constraints, 2);
+    this.addSpringConstraint(this.spring_constraints, 3);
   }
-  reset() {
-    this.initialyzeSystem();
-  }
-  addSpringConstraint(indent) {
+  addSpringConstraint(arr, indent) {
     for (let i = 0; i < this.parameters.num_points; i++) {
       let point1 = this.points[i];
       let point2 = this.points[(i + indent) % this.parameters.num_points];
       let distance = point_namespace.distance(point1, point2);
-      this.spring_constraints.push(
-          new point_namespace.SpringConstraint(point1, point2, distance));
+      arr.push(new point_namespace.SpringConstraint(point1, point2, distance));
     }
   }
+  relaxSprings() {
+    for (let i = 0; i < this.spring_constraints.length; i++) {
+      let constraint = this.spring_constraints[i];
+      let point1 = constraint.point1;
+      let point2 = constraint.point2;
+      let distance = point_namespace.distance(point1, point2);
+      let dx = point1.x - point2.x;
+      let dy = point1.y - point2.y;
+      let dl = distance - constraint.distance;
+      let dl_x = (dl * dx) / distance;
+      let dl_y = (dl * dy) / distance;
+      point1.x -= (alpha_over_relax * dl_x) / 2;
+      point1.y -= (alpha_over_relax * dl_y) / 2;
+      point2.x += (alpha_over_relax * dl_x) / 2;
+      point2.y += (alpha_over_relax * dl_y) / 2;
+    }
+  }
+}
+
+class System {
+  constructor() {
+    this.P = new Parameters();
+this.initialyzeSystem();
+  }
+  reset() {
+    this.initialyzeSystem();
+  }
+
   initialyzeSystem() {
-    this.t = 0.;
-    this.point_0 = new point_namespace.VerletPoint(
-        this.parameters.x_0, this.parameters.y_0, this.parameters.vx_0,
-        this.parameters.vy_0, 0, -this.parameters.g);
-    this.points = [];
-    point_namespace.pointCircle(
-        this.points, this.point_0, this.parameters.num_points,
-        this.parameters.radius);
-    // create constraints between points
-    this.spring_constraints = [];
-    this.addSpringConstraint(1);
-
-    const np = this.parameters.num_points;
-    if (np >= 2 && np <= 10) {
-      this.addSpringConstraint(2);
-    }
-    if (np >= 3 && np <= 10) {
-      this.addSpringConstraint(3);
-    }
-    if (np >= 6 && np <= 20) {
-      this.addSpringConstraint(5);
-    }
-    if (np >= 10 && np <= 20) {
-      this.addSpringConstraint(8);
-    }
-    if (np >= 20 && np <= 30) {
-      this.addSpringConstraint(10);
-    }
-    if (np >= 30 && np <= 40) {
-      this.addSpringConstraint(15);
-    }
-    if (np >= 40 && np <= 50) {
-      this.addSpringConstraint(20);
-    }
-    if (np >= 50 && np <= 60) {
-      this.addSpringConstraint(25);
-    }
-
-    this.collisions = [];
-    if (!this.with_floor) {
-      this.sqeezeCircle();
-    }
+    this.t = 0;
+    this.O1 = new Object(200, 200, 10, 50);
+    this.O2 = new Object(400, 200, 10, 50);
+    this.t = 0;
   }
   calcSystem() {
     this.t += this.parameters.dt;
@@ -114,7 +101,10 @@ hitman_relax_namespace.System = class {
     let min_index = 0;
     for (let i = 0; i < this.parameters.num_points; i++) {
       let point = this.points[i];
-      let distance = point_namespace.distance(point, {x: mouse_x, y: mouse_y});
+      let distance = point_namespace.distance(point, {
+        x: mouse_x,
+        y: mouse_y,
+      });
       if (distance < min_distance) {
         min_distance = distance;
         min_index = i;
@@ -209,12 +199,12 @@ hitman_relax_namespace.System = class {
     let dx = point1.x - point2.x;
     let dy = point1.y - point2.y;
     let dl = distance - constraint.distance;
-    let dl_x = dl * dx / distance;
-    let dl_y = dl * dy / distance;
-    point1.x -= alpha_over_relax * dl_x / 2;
-    point1.y -= alpha_over_relax * dl_y / 2;
-    point2.x += alpha_over_relax * dl_x / 2;
-    point2.y += alpha_over_relax * dl_y / 2;
+    let dl_x = (dl * dx) / distance;
+    let dl_y = (dl * dy) / distance;
+    point1.x -= (alpha_over_relax * dl_x) / 2;
+    point1.y -= (alpha_over_relax * dl_y) / 2;
+    point2.x += (alpha_over_relax * dl_x) / 2;
+    point2.y += (alpha_over_relax * dl_y) / 2;
   }
   // sqeeze points from circle to ellipse
   sqeezeCircle() {
@@ -230,7 +220,7 @@ hitman_relax_namespace.System = class {
       point.y = y_new + this.point_0.y;
     }
   }
-};
+}
 
 hitman_relax_namespace.Visualizator = class {
   constructor(with_floor) {
@@ -243,8 +233,11 @@ hitman_relax_namespace.Visualizator = class {
       p5.stroke(lg);
       p5.fill(lg);
       p5.rect(
-          0, system.parameters.floor, p5.width,
-          p5.height - system.parameters.floor);
+        0,
+        system.parameters.floor,
+        p5.width,
+        p5.height - system.parameters.floor
+      );
     }
 
     // draw constraints
@@ -254,8 +247,11 @@ hitman_relax_namespace.Visualizator = class {
     for (let i = 0; i < system.spring_constraints.length; i++) {
       let constraint = system.spring_constraints[i];
       p5.line(
-          constraint.point1.x, constraint.point1.y, constraint.point2.x,
-          constraint.point2.y);
+        constraint.point1.x,
+        constraint.point1.y,
+        constraint.point2.x,
+        constraint.point2.y
+      );
     }
     let green = color_scheme.GREEN(p5);
     // draw points
@@ -273,8 +269,9 @@ hitman_relax_namespace.RelaxInterface = class {
     this.base_name = base_name;
     this.with_floor = with_floor;
     this.system = new hitman_relax_namespace.System(this.with_floor);
-    this.visualizator =
-        new hitman_relax_namespace.Visualizator(this.with_floor);
+    this.visualizator = new hitman_relax_namespace.Visualizator(
+      this.with_floor
+    );
     this.index = 0;
     this.completed_iter = -1;
     this.iter_new_simul = -1;
@@ -287,12 +284,14 @@ hitman_relax_namespace.RelaxInterface = class {
         return ind;
       }
     }
-    return
+    return;
   }
   relaxConstraint(alpha_over_relax = 1.0) {
     if (this.index < this.system.collisions.length) {
       this.system.relaxCollisionConstraint(
-          this.system.collisions[this.index], alpha_over_relax);
+        this.system.collisions[this.index],
+        alpha_over_relax
+      );
     } else {
       let ind = this.index - this.system.collisions.length;
 
@@ -317,12 +316,13 @@ hitman_relax_namespace.RelaxInterface = class {
     } else {
       this.relaxConstraint();
     }
-    this.index = (this.index + 1) %
-        (this.system.collisions.length + this.system.spring_constraints.length);
+    this.index =
+      (this.index + 1) %
+      (this.system.collisions.length + this.system.spring_constraints.length);
     this.visualizator.draw(p5, this.system, color_scheme);
 
     p5.fill(0);
-    p5.text('Completed Iterations: ' + this.completed_iter, 10, 20);
+    p5.text("Completed Iterations: " + this.completed_iter, 10, 20);
   }
   iterOverrelax() {
     this.newSimulation();
@@ -361,24 +361,30 @@ hitman_relax_namespace.RelaxInterface = class {
   setupOverrelax(p5) {
     {
       let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
-          this.base_name, '1', 'OverRelax Iters');
+        this.base_name,
+        "1",
+        "OverRelax Iters"
+      );
       this.slider1 = ui_namespace.createSlider(div_m_1, 1, 10, 9);
       this.output1 = ui_namespace.createOutput(div_m_2);
       this.output1.innerHTML = this.slider1.value;
     }
-    this.slider1.oninput = function() {
+    this.slider1.oninput = function () {
       this.output1.innerHTML = this.slider1.value;
     }.bind(this);
     this.overrelax_iter = this.slider1.value;
 
     {
-      let [div_m_1, div_m_2] =
-          ui_namespace.createDivsForSlider(this.base_name, '2', 'Alpha over');
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "2",
+        "Alpha over"
+      );
       this.slider2 = ui_namespace.createSlider(div_m_1, 1, 2, 20);
       this.output2 = ui_namespace.createOutput(div_m_2);
       this.output2.innerHTML = this.slider2.value;
     }
-    this.slider2.oninput = function() {
+    this.slider2.oninput = function () {
       this.output2.innerHTML = this.slider2.value;
     }.bind(this);
     this.system.initialyzeSystem();
@@ -410,8 +416,12 @@ hitman_relax_namespace.SimulationInterface = class {
     let mouse_y = p5.mouseY;
     // if left mouse button is pressed
     let is_mouse = true;
-    if (mouse_x < 0 || mouse_x > p5.width || mouse_y < 0 ||
-        mouse_y > p5.height) {
+    if (
+      mouse_x < 0 ||
+      mouse_x > p5.width ||
+      mouse_y < 0 ||
+      mouse_y > p5.height
+    ) {
       is_mouse = false;
     }
     if (p5.mouseIsPressed == false) {
@@ -424,23 +434,29 @@ hitman_relax_namespace.SimulationInterface = class {
   }
   setup(p5) {
     {
-      let [div_m_1, div_m_2] =
-          ui_namespace.createDivsForSlider(this.base_name, '1', 'Relax Iters');
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "1",
+        "Relax Iters"
+      );
       this.slider1 = ui_namespace.createSlider(div_m_1, 1, 100, 99);
       this.output1 = ui_namespace.createOutput(div_m_2);
       this.output1.innerHTML = this.slider1.value;
     }
-    this.slider1.oninput = function() {
+    this.slider1.oninput = function () {
       this.output1.innerHTML = this.slider1.value;
     }.bind(this);
     {
-      let [div_m_1, div_m_2] =
-          ui_namespace.createDivsForSlider(this.base_name, '2', 'N points');
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "2",
+        "N points"
+      );
       this.slider2 = ui_namespace.createSlider(div_m_1, 4, 20, 16);
       this.output2 = ui_namespace.createOutput(div_m_2);
       this.output2.innerHTML = this.slider2.value;
     }
-    this.slider2.oninput = function() {
+    this.slider2.oninput = function () {
       this.output2.innerHTML = this.slider2.value;
     }.bind(this);
     this.n_points = this.slider2.value;
