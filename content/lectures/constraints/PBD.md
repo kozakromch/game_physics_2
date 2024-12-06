@@ -8,7 +8,8 @@ sidebar:
   open: true
 ---
 {{< add_script "js/constraints/elastic_inelastic.js" >}}
-
+{{< add_script "js/constraints/pbd.js" >}}
+{{< add_script "js/constraints/pbd_volume.js" >}}
 
 ## Интро
 
@@ -107,6 +108,9 @@ $$
 
 Собственно вот этот множитель $s$ и позволяет нам делать это. Мы сдвигаем все точки на одинаковое расстояние.
 
+{{< include_sketch path="constraints/sketch/pbd_volume_sketch.js" base_name="pbd_volume_sketch" >}}
+
+
 #### Добавляем массу
 Как и в прошлом методе, хочется, чтобы точка потяжелее двигалась меньше при разрешении ограничения. 
 Дальше тк мы постоянно делим на массу в уравнениях очень часто будет встречаться понятие инвертированной массы. $w = \frac{1}{m}$. Инвертированной массой очень просто определять несдвигаемые точки -- точку с бесконечной массой. Для нее $w = 0$.
@@ -129,6 +133,7 @@ $$
 Обратите внимание, что теперь в знаменателе стоит $w_k * \nabla_{\vec{p_k}} C$.
 
 Вот собственно и рецепт разрешения ограничений в PBD.
+
 
 #### Неравенства 
 
@@ -216,6 +221,9 @@ $$
 \end{split}
 \end{equation}
 $$
+
+{{< include_sketch path="constraints/sketch/pbd_collision_sketch.js" base_name="pbd_collision_sketch" >}}
+
 
 #### Разрешение коллизий по скоростям
 
