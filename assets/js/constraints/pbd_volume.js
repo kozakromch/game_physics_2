@@ -85,7 +85,7 @@ class Object {
     this.addSpringConstraints(this.spring_constraints, 1);
     // randomize spring constraints
     // this.spring_constraints = this.spring_constraints.sort(
-      // () => Math.random() - 0.5
+    // () => Math.random() - 0.5
     // );
     this.min_index = -1;
     for (let i = 0; i < this.points.length; i++) {
@@ -119,6 +119,9 @@ class Object {
       let point1 = constraint.point1;
       let point2 = constraint.point2;
       let distance = point_namespace.distance(point1, point2);
+      if (distance < 0.0001) {
+        continue;
+      }
       let dx = point1.x - point2.x;
       let dy = point1.y - point2.y;
       let dl = distance - constraint.distance;
@@ -148,7 +151,6 @@ class Object {
     }
   }
   relaxVolume() {
-    console.log(calculateArea(this.points));
     relaxPoints(this.points, this.initial_area, 1);
   }
   updateVelocity() {
@@ -160,7 +162,7 @@ class Object {
       point.old_y = point.y;
     }
   }
- 
+
   mouseLogic(is_mouse, mouse_x, mouse_y) {
     // find the closest point to the mouse
     if (is_mouse) {
@@ -180,7 +182,10 @@ class Object {
     let min_index = 0;
     for (let i = 0; i < this.points.length; i++) {
       let point = this.points[i];
-      let distance = point_namespace.distance(point, {x: mouse_x, y: mouse_y});
+      let distance = point_namespace.distance(point, {
+        x: mouse_x,
+        y: mouse_y,
+      });
       if (distance < min_distance) {
         min_distance = distance;
         min_index = i;
@@ -209,17 +214,16 @@ class System {
     );
   }
 
-  calcSystem(is_mouse, mouse_x, mouse_y) {
+  calcSystem(is_mouse, mouse_x, mouse_y, relax_iters) {
     this.t += this.P.dt;
     this.object.integrate();
 
-    for (let iter = 0; iter < 100; iter++) {
+    for (let iter = 0; iter < relax_iters; iter++) {
       this.object.mouseLogic(is_mouse, mouse_x, mouse_y);
 
       this.object.relaxCollisionsWithBounds();
       this.object.relaxSprings();
       this.object.relaxVolume();
-  
     }
     this.object.updateVelocity();
   }
@@ -265,8 +269,6 @@ class Visualizator {
       let point = object.points[i];
       p5.ellipse(point.x, point.y, radius, radius);
     }
-
-
   }
   draw(p5, system, color_scheme, radius = 12) {
     this.drawObject(p5, system, color_scheme, system.object, radius);
@@ -301,13 +303,28 @@ pbd_volume.Interface = class {
 
   iter(p5) {
     let [is_mouse, mouse_x, mouse_y] = this.mouseLogic(p5);
-    this.system.calcSystem(is_mouse, mouse_x, mouse_y);
+    let relax_iters = this.slider1.value
+    this.system.calcSystem(is_mouse, mouse_x, mouse_y, relax_iters);
     this.visualizator.draw(p5, this.system, color_scheme);
   }
   reset() {
     this.system.initialyzeSystem();
   }
   setup(p5) {
+    {
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "1",
+        "Relax Iters"
+      );
+      this.slider1 = ui_namespace.createSlider(div_m_1, 1, 500, 499);
+      this.output1 = ui_namespace.createOutput(div_m_2);
+      this.output1.innerHTML = this.slider1.value;
+    }
+    this.slider1.oninput = function () {
+      this.output1.innerHTML = this.slider1.value;
+    }.bind(this);
+
     p5.frameRate(30);
     this.system.P.width = p5.width;
     this.system.P.height = p5.height;
