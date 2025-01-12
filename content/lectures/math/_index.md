@@ -16,5 +16,11 @@ toc: true
     <div class="col" style="margin-top: 3%;">
   {{< card link="02_numerical_method" title="Симуляция твердого тела" image="images/math/rb_simulation/main.excalidraw.png" icon="book-open" >}}
    </div>
+   </div>
+    <div class="row">
+      <div class="col" style="margin-top: 3%;">
+  {{< card link="03_calc_mesh_params" title="Расчет параметров меша" image="images/math/calc_mesh_params/main.excalidraw.png" icon="book-open" >}}
+    </div>
+      
 </div>
 </div>

@@ -4,7 +4,7 @@ import p5 from '../../../js/libs/p5.min.js';
 
 {
   let my_interface =
-      new pbd_volume.Interface('pbd_volume_sketch', false);
+      new pbd_volume.Interface('pbd_volume_friction_sketch', true);
   let main_visualizator =
       main_visualizator_namespace.getMainVisualizator(my_interface, true);
   new p5(main_visualizator);

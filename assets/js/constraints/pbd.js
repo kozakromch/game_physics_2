@@ -124,6 +124,9 @@ class Object {
       let point1 = constraint.point1;
       let point2 = constraint.point2;
       let distance = point_namespace.distance(point1, point2);
+      if (distance < 0.0001) {
+        continue;
+      }
       let dx = point1.x - point2.x;
       let dy = point1.y - point2.y;
       let dl = distance - constraint.distance;
