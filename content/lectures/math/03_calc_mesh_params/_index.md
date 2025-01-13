@@ -4,7 +4,6 @@ author: Роман Козак
 type: docs
 toc: true
 math: true
-published: true
 ---
 
 

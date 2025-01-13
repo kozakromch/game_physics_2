@@ -1,9 +1,11 @@
 ---
-title: 4. Projective Dynamics
+title: 9. Projective Dynamics
 author: Роман Козак
 type: docs
+weight: 9
 sidebar:
   open: true
-published: false
+params:
+    published: false
 ---
 ## WIP 

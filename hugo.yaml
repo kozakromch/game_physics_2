@@ -43,10 +43,10 @@ menu:
 params:
   navbar:
     displayTitle: true
-    displayLogo: false
+    displayLogo: true
 
   footer:
-    displayCopyright: false
+    displayCopyright: true
     displayPoweredBy: false
 
   editURL:

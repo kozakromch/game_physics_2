@@ -7,6 +7,7 @@ prev:
 next: 
 toc: true
 math: true
-published: false
+params:
+    published: false
 ---
 WIP

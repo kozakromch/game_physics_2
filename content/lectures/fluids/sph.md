@@ -6,7 +6,8 @@ math: true
 toc: true
 sidebar:
   open: true
-published: false
+params:
+    published: false
 ---
 
 ## Интро

@@ -2,6 +2,7 @@
 title: 2. Метод Hitman Codename 47
 author: Роман Козак
 type: docs
+weight: 2
 math: true
 toc: true
 sidebar:
@@ -36,8 +37,8 @@ $$
 
 Для того чтобы разрешать констрейны они придумали процедуру релаксации. В этой релаксации и есть вся изюминка метода.
 
-
 {{<details title="Псевдокод симуляции" closed="true" >}}
+
 ```javascript
 function simulate(points, constraints, iterations = 10) {
   // Интегрируем по Верле
@@ -52,6 +53,7 @@ function simulate(points, constraints, iterations = 10) {
   }
 }
 ```
+
 {{< /details >}}
 
 ## Релаксация

@@ -1,5 +1,6 @@
 ---
-published: false
+params:
+    published: false
 ---
 
 ## Linear equations solvers

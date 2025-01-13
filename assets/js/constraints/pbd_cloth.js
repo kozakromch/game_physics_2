@@ -7,7 +7,7 @@ class Parameters {
   constructor() {
     this.m = 3.0;
     this.g = 1500;
-    this.num_points = 50;
+    this.num_points = 30;
     this.width = 500;
     this.height = 300;
     this.dt = 0.02;
@@ -17,8 +17,7 @@ class Parameters {
 
 class Sphere {
   constructor(x, y, r, ax = 0, ay = 0) {
-    this.x = x;
-    this.y = y;
+    this.p = new VerletPoint(x, y, ax, ay);
     this.r = r;
     this.ax = ax;
     this.ay = ay;
@@ -38,6 +37,7 @@ class VerletPoint {
   }
 
   updatePosition(dt) {
+    if (this.inv_mass == 0.0) return;
     let new_x = this.x + (this.x - this.prev_x) + this.ax * dt * dt;
     let new_y = this.y + (this.y - this.prev_y) + this.ay * dt * dt;
     this.prev_x = this.x;
@@ -45,54 +45,74 @@ class VerletPoint {
     this.x = new_x;
     this.y = new_y;
   }
+  boundCollision(floor, width, radius = 0) {
+    if (this.y + radius > floor) {
+      this.y = floor - radius;
+      this.prev_y = floor -radius;
+    }
+    // also check sides and top
+    if (this.x - radius < 0) {
+      this.x = radius;
+      this.prev_x = radius;
+    }
+    if (this.x + radius > width) {
+      this.x = width + radius;
+      this.prev_x = width + radius;
+    }
+    if (this.y - radius< 0) {
+      this.y = radius;
+      this.prev_y = radius;;
+    }
+  }
 }
 
 class SpringConstraint {
-  constructor(point1, point2, distance, compliance = 0.0) {
+  constructor(point1, point2, distance) {
     this.point1 = point1;
     this.point2 = point2;
     this.rest_length = distance;
-    this.compliance = compliance;
     this.lambda = 0.0; // Lagrange multiplier for XPBD
   }
 
-  solvePBD() {
+  solvePBD(alpha) {
     let dx = this.point2.x - this.point1.x;
     let dy = this.point2.y - this.point1.y;
     let distance = Math.sqrt(dx * dx + dy * dy);
-    let correction = (distance - this.rest_length) / distance;
+    if (distance < 1e-6) distance = 1e-6;
 
-    let correction_x = (correction * dx) / 2;
-    let correction_y = (correction * dy) / 2;
+    let correction = (distance - this.rest_length) / distance;
+    let correction_x = (alpha * (correction * dx)) / 2;
+    let correction_y = (alpha * (correction * dy)) / 2;
 
     this.point1.x += correction_x * this.point1.inv_mass;
     this.point1.y += correction_y * this.point1.inv_mass;
     this.point2.x -= correction_x * this.point2.inv_mass;
     this.point2.y -= correction_y * this.point2.inv_mass;
   }
-  solveXPBD(dt) {
+  solveXPBD(dt, compliance) {
     let dx = this.point2.x - this.point1.x;
     let dy = this.point2.y - this.point1.y;
     let distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < 1e-6) return;
 
     let w1 = this.point1.inv_mass;
     let w2 = this.point2.inv_mass;
-    let total_mass = w1 + w2;
-
-    let constraint = distance - this.rest_length;
-    let alpha = this.compliance / (dt * dt);
+    let total_inv_mass = w1 + w2;
+    if (total_inv_mass < 1e-6) return;
+    let constraint = this.rest_length - distance;
+    let alpha = compliance / (dt * dt);
 
     let delta_lambda =
-      -(constraint + alpha * this.lambda) / (total_mass + alpha);
+      -(constraint + alpha * this.lambda) / (total_inv_mass + alpha);
     this.lambda += delta_lambda;
 
     let correction = delta_lambda / distance;
 
-    let correction_x = correction * dx;
-    let correction_y = correction * dy;
+    let correction_x = (correction * dx) / 2;
+    let correction_y = (correction * dy) / 2;
 
-    let factor1 = w1 / total_mass;
-    let factor2 = w2 / total_mass;
+    let factor1 = w1 / total_inv_mass;
+    let factor2 = w2 / total_inv_mass;
 
     this.point1.x += correction_x * factor1;
     this.point1.y += correction_y * factor1;
@@ -103,8 +123,6 @@ class SpringConstraint {
 
 class System {
   constructor(with_floor) {
-    this.relax_iter = 10;
-    this.simul_iter = 1;
     this.with_floor = with_floor;
     this.P = new Parameters();
   }
@@ -112,7 +130,7 @@ class System {
     this.initializeSystem();
   }
   initializeSystem() {
-    this.sphere = new Sphere(250, 150, 50, 0, this.P.g);
+    this.sphere = new Sphere(this.P.width/2, this.P.floor, 50, 0, this.P.g);
     this.points = [];
     this.spring_constraints = [];
 
@@ -122,7 +140,7 @@ class System {
 
     for (let i = 0; i < np; i++) {
       for (let j = 0; j < np; j++) {
-        let x = j * dx;
+        let x = j * dx + dx / 2;
         let y = i * dy;
         let point = new VerletPoint(x, y, 0, this.P.g);
         this.points.push(point);
@@ -146,69 +164,56 @@ class System {
         }
       }
     }
+    this.relaxFixedPoints();
   }
 
-  simulatePBD() {
-    for (let i = 0; i < this.relax_iter; i++) {
-      this.relaxFixedPoints();
-      this.relaxSpringConstraintsPBD();
-      this.relaxAllCollisions(this.P.width);
+  simulatePBD(relax_iter, is_mouse, mouse_x, mouse_y, alpha) {
+    for (let i = 0; i < relax_iter; i++) {
+      this.relaxAllCollisions();
+      this.relaxSpringConstraintsPBD(alpha);
     }
 
     for (let point of this.points) {
       point.updatePosition(this.P.dt);
     }
+    this.sphere.p.updatePosition(this.P.dt);
+    this.sphere.p.boundCollision(this.P.floor, this.P.width, this.sphere.r);
   }
-  simulateXPBD() {
+  simulateXPBD(relax_iter, is_mouse, mouse_x, mouse_y, alpha) {
     //zero lambda
     for (let constraint of this.spring_constraints) {
-        constraint.lambda = 0.0;
+      constraint.lambda = 0.0;
     }
-    // for (let i = 0; i < this.relax_iter; i++) {
-      this.relaxFixedPoints();
-      this.relaxSpringConstraintsXPBD();
-    //   this.relaxAllCollisions(this.P.width);
-    // }
+    for (let i = 0; i < relax_iter; i++) {
+      this.relaxAllCollisions();
+      this.relaxSpringConstraintsXPBD(alpha);
+    }
 
     for (let point of this.points) {
       point.updatePosition(this.P.dt);
     }
+    this.sphere.p.updatePosition(this.P.dt);
+    this.sphere.p.boundCollision(this.P.floor, this.P.width, this.sphere.r);
   }
 
-  relaxSpringConstraintsPBD() {
+  relaxSpringConstraintsPBD(alpha) {
     for (let constraint of this.spring_constraints) {
-      constraint.solvePBD();
+      constraint.solvePBD(alpha);
     }
   }
-  relaxSpringConstraintsXPBD() {
+  relaxSpringConstraintsXPBD(compliance) {
     for (let constraint of this.spring_constraints) {
-      constraint.solveXPBD(this.P.dt);
+      constraint.solveXPBD(this.P.dt, compliance);
     }
   }
 
-  relaxAllCollisions(width) {
+  relaxAllCollisions() {
     for (let point of this.points) {
-      if (point.y > this.P.floor) {
-        point.y = this.P.floor;
-        point.prev_y = this.P.floor;
-      }
-      // also check sides and top
-      if (point.x < 0) {
-        point.x = 0;
-        point.prev_x = 0;
-      }
-      if (point.x > width) {
-        point.x = width;
-        point.prev_x = width;
-      }
-      if (point.y < 0) {
-        point.y = 0;
-        point.prev_y = 0;
-      }
+      point.boundCollision(this.P.floor, this.P.width);
       // collision with sphere
       let sp = this.sphere;
-      let dx = point.x - sp.x;
-      let dy = point.y - sp.y;
+      let dx = point.x - sp.p.x;
+      let dy = point.y - sp.p.y;
       let distance = Math.sqrt(dx * dx + dy * dy);
       if (distance < sp.r) {
         let dl = sp.r - distance;
@@ -227,14 +232,7 @@ class System {
     let np = this.P.num_points;
     for (let i = 0; i < np; i++) {
       let point = this.points[i];
-      point.x = collumn_start + i * dx;
-      point.y = 0;
-      point.prev_x = point.x;
-      point.prev_y = point.y;
-      point.vx = 0;
-      point.vy = 0;
-      point.ax = 0;
-      point.ay = 0;
+      point.inv_mass = 0.0;
     }
   }
 }
@@ -286,7 +284,7 @@ class Visualizator {
     let blue = color_scheme.BLUE(p5);
     p5.stroke(blue);
     p5.fill(blue);
-    p5.ellipse(system.sphere.x, system.sphere.y, 2 * system.sphere.r);
+    p5.ellipse(system.sphere.p.x, system.sphere.p.y, 2 * system.sphere.r);
   }
 }
 
@@ -322,22 +320,14 @@ pbd_cloth.SimulationInterface = class {
     let relax_iter = this.slider1.value;
     let alpha = this.slider2.value / 100;
     if (this.pbd) {
-      this.system.simulatePBD(
-        relax_iter,
-        is_mouse,
-        mouse_x,
-        mouse_y,
-        p5.width,
-        alpha
-      );
+      this.system.simulatePBD(relax_iter, is_mouse, mouse_x, mouse_y, alpha);
     } else {
       this.system.simulateXPBD(
         relax_iter,
         is_mouse,
         mouse_x,
         mouse_y,
-        p5.width,
-        alpha
+        alpha / 5000
       );
     }
 
@@ -350,7 +340,7 @@ pbd_cloth.SimulationInterface = class {
         "1",
         "Relax Iters"
       );
-      this.slider1 = ui_namespace.createSlider(div_m_1, 1, 5, 4);
+      this.slider1 = ui_namespace.createSlider(div_m_1, 1, 500, 499);
       this.output1 = ui_namespace.createOutput(div_m_2);
       this.output1.innerHTML = this.slider1.value;
     }
