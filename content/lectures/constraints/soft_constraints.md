@@ -1,8 +1,8 @@
 ---
-title: 8. Пружинки Будды
+title: 50. Пружинки Будды
 author: Роман Козак
 type: docs
-weight: 8
+weight: 50
 prev: docs/first-page
 next: docs/folder/leaf
 sidebar:

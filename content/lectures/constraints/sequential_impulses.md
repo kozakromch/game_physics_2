@@ -1,11 +1,14 @@
 ---
-title: 40. Projective Dynamics
+title: 10. Sequential Impulses
 author: Роман Козак
 type: docs
-weight: 40
+weight: 10
+math: true
+toc: true
 sidebar:
   open: true
 params:
     published: false
 ---
-## WIP 
+
+WIP

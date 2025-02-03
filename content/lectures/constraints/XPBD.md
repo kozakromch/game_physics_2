@@ -369,6 +369,8 @@ $$
 
 SmallSteps это режим работы XPBD, который был описан в [статье](#smallsteps_article) в 2019 году.
 
+
+Используется тут [warp NVIDIA](https://github.com/NVIDIA/warp/blob/main/warp/sim/integrator_xpbd.py)
 ## Источники
 
 - Оригинальная статья [XPBD](https://matthias-research.github.io/pages/publications/XPBD.pdf)
