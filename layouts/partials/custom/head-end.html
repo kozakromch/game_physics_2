@@ -32,7 +32,7 @@ resources.Get "js/common/sc_grid.js" | resources.Minify }}
     await init();
     console.log({{$game_physics_simulation_wasm.RelPermalink}});
     window.wasmFuncs = wasmModule; // Делаем wasmFuncs глобальным
-    let base_url = "http://localhost:1313/";
+    let base_url = {{absURL ""}};
     window.wasmFuncs.set_base_url(base_url + "rust/src/assets/");
     console.log(base_url + "rust/src/assets/");
 
