@@ -1,22 +1,53 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.0.3/math.min.js"></script>
 
-{{ $p5_scribble_js := resources.Get "js/libs/p5.scribble.js" | resources.Minify}}
-{{ $p5_js := resources.Get "js/libs/p5.js" | resources.Minify}}
+{{ $p5_scribble_js := resources.Get "js/libs/p5.scribble.js" |
+resources.Minify}} {{ $p5_js := resources.Get "js/libs/p5.js" |
+resources.Minify}} {{ $base_vis_js := resources.Get "js/common/base_vis.js" |
+resources.Minify }} {{ $color_scheme_js := resources.Get
+"js/common/color_scheme.js" | resources.Minify }} {{ $common_vis_js :=
+resources.Get "js/common/common_vis.js" | resources.Minify }} {{ $energy_js :=
+resources.Get "js/common/energy.js" | resources.Minify }} {{ $main_vis_js :=
+resources.Get "js/common/main_vis.js" | resources.Minify }} {{ $sc_grid_js :=
+resources.Get "js/common/sc_grid.js" | resources.Minify }}
 
-{{ $base_vis_js := resources.Get "js/common/base_vis.js" | resources.Minify }}
-{{ $color_scheme_js := resources.Get "js/common/color_scheme.js" | resources.Minify }}
-{{ $common_vis_js := resources.Get "js/common/common_vis.js" | resources.Minify }}
-{{ $energy_js := resources.Get "js/common/energy.js" | resources.Minify }}
-{{ $main_vis_js := resources.Get "js/common/main_vis.js" | resources.Minify }}
-{{ $sc_grid_js := resources.Get "js/common/sc_grid.js" | resources.Minify }}
+<script defer src="{{ $p5_scribble_js.RelPermalink }}" type="module"></script>
+<script defer src="{{ $p5_js.RelPermalink }}" type="module"></script>
+
+<script defer src="{{ $base_vis_js.RelPermalink }}" type="module"></script>
+<script defer src="{{ $color_scheme_js.RelPermalink }}" type="module"></script>
+<script defer src="{{ $common_vis_js.RelPermalink }}" type="module"></script>
+<script defer src="{{ $energy_js.RelPermalink }}" type="module"></script>
+<script defer src="{{ $main_vis_js.RelPermalink }}" type="module"></script>
+<script defer src="{{ $sc_grid_js.RelPermalink }}" type="module"></script>
+
+{{ $game_physics_simulation_wasm := resources.Get "rust/pkg/game_physics_simulation_bg.wasm" }}
+{{ $game_physics_simulation_js:= resources.Get "rust/pkg/game_physics_simulation.js" | resources.Minify }}
+
+<script type="module">
+
+  import init, * as wasmModule from "{{ $game_physics_simulation_js.RelPermalink }}";
+
+  // Глобальная инициализация WebAssembly
+  const wasmReady = (async () => {
+    await init();
+    console.log({{$game_physics_simulation_wasm.RelPermalink}});
+    window.wasmFuncs = wasmModule; // Делаем wasmFuncs глобальным
+    let base_url = "http://localhost:1313/";
+    window.wasmFuncs.set_base_url(base_url + "rust/src/assets/");
+    console.log(base_url + "rust/src/assets/");
+
+  })();
 
 
-<script defer src="{{ $p5_scribble_js.RelPermalink }}" type ='module'></script>
-<script defer src="{{ $p5_js.RelPermalink }}" type ='module'></script>
+  // Выполнение всех зарегистрированных функций
+  document.addEventListener("DOMContentLoaded", async () => {
+    await wasmReady;
+    if (window.runWasmFunction) {
+      for (const func of window.runWasmFunction) {
+        func();
+      }
+    }
+  });
+</script>
 
-<script defer src="{{ $base_vis_js.RelPermalink }}" type ='module'></script>
-<script defer src="{{ $color_scheme_js.RelPermalink }}" type ='module'></script>
-<script defer src="{{ $common_vis_js.RelPermalink }}" type ='module'></script>
-<script defer src="{{ $energy_js.RelPermalink }}" type ='module'></script>
-<script defer src="{{ $main_vis_js.RelPermalink }}" type ='module'></script>
-<script defer src="{{ $sc_grid_js.RelPermalink }}" type ='module'></script>
+{{ .Site.BaseURL }} 

@@ -5,3 +5,8 @@ resources/
 
 # Editor
 .vscode/
+
+Cargo.lock
+# DS_Store everywhere
+**/.DS_Store
+

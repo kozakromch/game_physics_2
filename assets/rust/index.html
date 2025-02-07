@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="""viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bevy Circle Bouncing</title>
+</head>
+<body>
+    <h1>Bevy Circle Bouncing Example</h1>
+    <canvas id="supercanvas"></canvas>
+
+    <script type="module">
+      import init, * as wasmFuncs from '../pkg/game_physics_simulation.js';
+
+      // Промис для инициализации WebAssembly
+      const wasmReady = (async () => {
+        await init(); // Инициализация WebAssembly
+        console.log("WebAssembly инициализирован.");
+      })();
+      async function run() {
+        //first wasm init then call the function
+        await wasmReady;
+        wasmFuncs.circles_collisions("supercanvas");
+      }
+
+      run();
+    </script>
+
+
+    
+</body>
+</html>
