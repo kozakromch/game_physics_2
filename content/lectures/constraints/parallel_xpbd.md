@@ -1,5 +1,6 @@
 ---
-title: 7. Параллелизация PBD
+title: 6
+. Параллелизация PBD
 author: Роман Козак
 type: docs
 weight: 6
@@ -10,6 +11,9 @@ sidebar:
 params:
     published: false
 ---
+
+
+
 
 https://sci-hub.se/https://doi.org/10.1111/cgf.12570  раскраска
 

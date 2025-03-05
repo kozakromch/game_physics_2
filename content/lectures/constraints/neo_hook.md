@@ -12,6 +12,9 @@ params:
 ---
 
 
+{{< publish_obj path="rust/src/assets/tetra_cube.obj" >}}
+
+{{< include_wasm base_name="xpbd_neohookean" >}}
 
 
 https://mmacklin.com/neohookean.pdf

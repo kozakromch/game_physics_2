@@ -242,17 +242,14 @@ pub async fn run(_canvas_id: &str) {
 
     let path_to_assets = base_url::get_base_url();
     let path_to_obj = "tetra_cube.obj";
-    //console_log path_to_assets for wasm 
     #[cfg(target_arch = "wasm32")]
 {
     console::log_1(&format!("path_to_assets: {:?}", path_to_assets).into());
     let path = format!("{}/{}", path_to_assets, path_to_obj);
     console::log_1(&format!("path: {:?}", path).into());
 }
-// console::log_1(&format!("Here {}", 0).into());
 
     let tetra_mesh = tetra_mesh::TetraMesh::new(&path_to_assets, path_to_obj).await;
-    // console::log_1(&format!("Here {}", 1).into());
 
     let target = three_d::vec3(0.0, 3.0, 0.0);
     let scene_radius = 20.0;

@@ -23,6 +23,8 @@ resources.Get "js/common/sc_grid.js" | resources.Minify }}
 {{ $game_physics_simulation_wasm := resources.Get "rust/pkg/game_physics_simulation_bg.wasm" }}
 {{ $game_physics_simulation_js:= resources.Get "rust/pkg/game_physics_simulation.js" | resources.Minify }}
 
+
+
 <script type="module">
 
   import init, * as wasmModule from "{{ $game_physics_simulation_js.RelPermalink }}";
@@ -30,11 +32,17 @@ resources.Get "js/common/sc_grid.js" | resources.Minify }}
   // Глобальная инициализация WebAssembly
   const wasmReady = (async () => {
     await init();
-    console.log({{$game_physics_simulation_wasm.RelPermalink}});
+    // console.log({{$game_physics_simulation_wasm.RelPermalink}});
     window.wasmFuncs = wasmModule; // Делаем wasmFuncs глобальным
-    let base_url = {{absURL ""}};
-    window.wasmFuncs.set_base_url(base_url + "rust/src/assets/");
-    console.log(base_url + "rust/src/assets/");
+    
+    {{ if hugo.IsServer }}
+        let base_url = "http://127.0.0.1:1313/";
+    {{ else }}
+        let base_url = {{ .Site.BaseURL }};    
+    {{ end }}
+
+    window.wasmFuncs.set_base_url(base_url + "rust/src/assets");
+    console.log(base_url + "rust/src/assets");
 
   })();
 
@@ -49,5 +57,3 @@ resources.Get "js/common/sc_grid.js" | resources.Minify }}
     }
   });
 </script>
-
-{{ .Site.BaseURL }} 
