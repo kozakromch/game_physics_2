@@ -371,6 +371,11 @@ SmallSteps это режим работы XPBD, который был описа
 
 
 Используется тут [warp NVIDIA](https://github.com/NVIDIA/warp/blob/main/warp/sim/integrator_xpbd.py)
+
+По дефолту используется в PhysX.
+
+Я не знаю почему, но разработчики решили назвать этот солвер Temporal Gauss-Seidel (TGS).
+
 ## Источники
 
 - Оригинальная статья [XPBD](https://matthias-research.github.io/pages/publications/XPBD.pdf)
