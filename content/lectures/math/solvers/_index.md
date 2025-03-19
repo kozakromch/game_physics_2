@@ -1,6 +1,9 @@
 ---
-params:
-    published: false
+title: 4. Солверы линейных уравнений
+author: Роман Козак
+type: docs
+toc: true
+math: true
 ---
 
 ## Linear equations solvers
