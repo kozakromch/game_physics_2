@@ -7,7 +7,8 @@ main_visualizator_namespace.getMainVisualizator = function (
   custom_interface,
   is_interactive = false,
   with_background = true,
-  with_ground = true
+  with_ground = true,
+  web_gl = false
 ) {
   var context = custom_interface;
   let sc_grid = new sc_grid_namespace.ScGrid(12, 21);
@@ -32,9 +33,15 @@ main_visualizator_namespace.getMainVisualizator = function (
     };
     let number_of_pause_frames = 0;
     let draw_pause = function () {
-      if (number_of_pause_frames < 50) {
+      if (number_of_pause_frames < 30) {
         number_of_pause_frames++;
+        if (!web_gl) {
         p5.background(5, 5);
+        } else {
+          
+        }
+
+
       }
     };
     let draw_interactive = function () {
@@ -44,14 +51,15 @@ main_visualizator_namespace.getMainVisualizator = function (
       let text_width = p5.textWidth(text);
       let text_height = p5.textAscent() + p5.textDescent();
       let text_x = p5.width / 2 - text_width / 2;
-      let text_y = p5.height/2;
-      let extra = text_height/2;
+      let text_y = p5.height / 2;
+      let extra = text_height / 2;
       p5.fill(255, 255, 255, 10);
       p5.rect(
         text_x - extra,
-        text_y - text_height, 
+        text_y - text_height,
         text_width + 2 * extra,
-        text_height + extra, 20
+        text_height + extra,
+        20
       );
       p5.fill(0);
       p5.text(text, text_x, text_y);
@@ -63,7 +71,7 @@ main_visualizator_namespace.getMainVisualizator = function (
       canvas = p5.createCanvas(
         base_vis.width,
         base_vis.height,
-        p5.P2D,
+        web_gl ? p5.WEBGL : p5.P2D,
         base_vis.canvas
       );
       context.setup(p5, base_vis.base_name);
@@ -73,7 +81,7 @@ main_visualizator_namespace.getMainVisualizator = function (
       if (base_vis.is_paused) {
         draw_pause();
         if (is_interactive) {
-        draw_interactive();
+          draw_interactive();
         }
       } else {
         draw_iter(p5);
