@@ -99,11 +99,11 @@ class Quaternion {
 
 class Parameters {
   constructor() {
-    this.L_world = [0.5, 0.5, 500.0]; // Заданный глобальный момент импульса (константный)
-    this.sizes = [600, 10, 200];
+    this.L_world = [0.5, 0.5, 700.0]; // Заданный глобальный момент импульса (константный)
+    this.sizes = [100, 30, 50];
     this.mass = 1;
-    this.subIters = 300;
-    this.dt = 0.01;
+    this.subIters = 100;
+    this.dt = 5;
     this.width = 800;
     this.height = 800;
   }
@@ -130,7 +130,7 @@ class System {
       this.P.sizes[2],
       this.P.mass
     );
-    // this.I = [3341, 33333, 30008];
+    this.I = [3341, 33333, 30008];
     console.log(this.I);
     // Начальный момент импульса в локальных координатах
     let R = this.q.toMatrix3();
@@ -143,9 +143,10 @@ class System {
     this.init();
   }
   calcSystem() {
+    let dt = this.P.dt/this.P.subIters;
     for (let i = 0; i < this.P.subIters; i++) {
-      this.forwardEuler();
-      let dq = Quaternion.fromAngularVelocity(this.omega, this.P.dt);
+      this.forwardEuler(dt);
+      let dq = Quaternion.fromAngularVelocity(this.omega, dt);
       this.q = this.q.add(this.q.mult(dq));
       this.q.normalize();
     }
@@ -163,8 +164,8 @@ class System {
     return multMatVec(R, L_body);
   }
 
-  forwardEuler() {
-    let dt = this.P.dt;
+  forwardEuler(dt) {
+    
     let I = this.I;
     // Уравнение Эйлера: dω/dt = -I⁻¹ (ω × (Iω))
     let Iomega = [
