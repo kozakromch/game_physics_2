@@ -36,12 +36,9 @@ main_visualizator_namespace.getMainVisualizator = function (
       if (number_of_pause_frames < 30) {
         number_of_pause_frames++;
         if (!web_gl) {
-        p5.background(5, 5);
+          p5.background(5, 5);
         } else {
-          
         }
-
-
       }
     };
     let draw_interactive = function () {
@@ -65,7 +62,17 @@ main_visualizator_namespace.getMainVisualizator = function (
       p5.text(text, text_x, text_y);
       p5.textSize(15);
     };
+    p5.preload = function () {
+      if (web_gl) {
+        this.myFont = p5.loadFont(
+          "https://cdn.jsdelivr.net/npm/@fontsource/roboto/files/roboto-latin-400-normal.woff2"
+        );
+      }
+    };
     p5.setup = function () {
+      if (web_gl) {
+        p5.textFont(this.myFont);
+      }
       p5.disableFriendlyErrors = true;
       p5.frameRate(30);
       canvas = p5.createCanvas(
