@@ -3,7 +3,7 @@ import p5 from "../../../js/libs/p5.min.js";
 import rb_free from "../../../js/rb_simulation/rb_free.min.js";
 
 {
-  let my_interface = new rb_free.Interface("dzhanibekov", false);
+  let my_interface = new rb_free.Interface("dzhanibekov_implicit", true);
   let main_visualizator = main_visualizator_namespace.getMainVisualizator(
     my_interface,
     false,

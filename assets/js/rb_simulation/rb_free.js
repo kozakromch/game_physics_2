@@ -15,6 +15,9 @@ function multMatVec(m, v) {
     m[6] * v[0] + m[7] * v[1] + m[8] * v[2],
   ];
 }
+function multiplyMatVec(mat, vec) {
+  return mat.map(row => row[0]*vec[0] + row[1]*vec[1] + row[2]*vec[2]);
+}
 
 function transposeMat3(m) {
   return [m[0], m[3], m[6], m[1], m[4], m[7], m[2], m[5], m[8]];
@@ -319,12 +322,21 @@ class Visualizator {
     p5.box(...system.P.sizes); // куб в качестве твердого тела
     p5.pop();
   }
-  drawFloor(p5) {
+  drawFloor(p5, system) {
+    // Create a graphics buffer for the floor texture
+    let floorTexture = p5.createGraphics(800, 800);
+    floorTexture.background(180); // Серый фон
+    floorTexture.fill(0); // Черный цвет текста
+    floorTexture.textSize(20);
+    floorTexture.textAlign(floorTexture.LEFT, floorTexture.TOP);
+    floorTexture.text(`Energy: ${system.E.toFixed(2)}`, 10, 10); // Отображение энергии
+
+    // Apply the texture to the floor
     p5.push();
     p5.rotateX(p5.HALF_PI); // Повернуть, чтобы лежал в XY-плоскости
     p5.translate(0, 0, -70); // Опустить чуть ниже центра сцены
     p5.noStroke();
-    p5.fill(180); // Серый цвет
+    p5.texture(floorTexture); // Использовать текстуру
     p5.plane(800, 800); // Ширина и длина пола
     p5.pop();
   }
@@ -362,21 +374,16 @@ class Visualizator {
     p5.strokeWeight(3);
     this.drawVectorArrow(p5, system.w_world, 100);
   }
-  printEnergy(p5, system) {
-    p5.fill(0);
-    p5.textSize(20);
-    p5.textAlign(p5.LEFT, p5.TOP);
-    p5.text("Energy: " + system.E.toFixed(2) + " J", 10, 10);
-  }
+
   draw(p5, system) {
     p5.background(250);
 
     p5.orbitControl();
-    this.drawFloor(p5);
+    this.drawFloor(p5, system);
     this.drawLWorld(p5, system);
     this.drawWworld(p5, system);
     this.drawRigidBody(p5, system);
-    this.printEnergy(p5, system);
+
   }
 }
 let rb_free = {};
@@ -407,7 +414,6 @@ rb_free.Interface = class {
       1,
       0
     ); // upX, upY, upZ — направление "вверх"
-    p5.textFont(myFont);
   }
 
   reset() {
