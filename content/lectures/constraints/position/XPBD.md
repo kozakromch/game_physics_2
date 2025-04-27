@@ -1,5 +1,5 @@
 ---
-title: 4. XPBD и SmallSteps
+title: 3. XPBD и SmallSteps
 author: Роман Козак
 type: docs
 weight: 4

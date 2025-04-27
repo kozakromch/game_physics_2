@@ -1,5 +1,5 @@
-import point_namespace from '../../../js/common/point.min.js';
-import ui_namespace from '../../../js/common/ui.min.js';
+import point_namespace from "../../../js/common/point.min.js";
+import ui_namespace from "../../../js/common/ui.min.js";
 
 let all_pairs_namespace = {};
 all_pairs_namespace.Ball = class {
@@ -14,35 +14,35 @@ all_pairs_namespace.Ball = class {
     this.ax = 0;
     this.ay = 0;
   }
-}
+};
 all_pairs_namespace.Parameters = class {
   constructor() {
     this.g = -200.2;
-    this.num_points = 100;
+    this.num_points = 6;
     this.dt = 0.001;
     this.height = 500;
     this.width = 500;
     this.restitution = 0.95;
     this.sub_steps = 5;
+    this.relax_position = true;
+    this.mass_ratio = 10.0;
   }
 };
 
 class UniformGridVector {
   constructor(canvasWidth, canvasHeight, cellSize, maxRadius) {
-    this.cellSize = cellSize;  // Размер одной ячейки
-    this.gridWidth =
-        Math.ceil(canvasWidth / cellSize) + 1;  // Количество ячеек по ширине
-    this.gridHeight =
-        Math.ceil(canvasHeight / cellSize) + 1;  // Количество ячеек по высоте
-    this.maxRadius = maxRadius;  // Максимальный радиус шарика
+    this.cellSize = cellSize; // Размер одной ячейки
+    this.gridWidth = Math.ceil(canvasWidth / cellSize) + 1; // Количество ячеек по ширине
+    this.gridHeight = Math.ceil(canvasHeight / cellSize) + 1; // Количество ячеек по высоте
+    this.maxRadius = maxRadius; // Максимальный радиус шарика
     this.cells = Array(this.gridWidth * this.gridHeight)
-                     .fill(null)
-                     .map(() => []);  // Вектор ячеек
+      .fill(null)
+      .map(() => []); // Вектор ячеек
   }
 
   // Очистка сетки перед обновлением
   clear() {
-    this.cells.forEach(cell => cell.length = 0);
+    this.cells.forEach((cell) => (cell.length = 0));
   }
 
   // Перевод 2D координат ячейки в одномерный индекс
@@ -54,7 +54,7 @@ class UniformGridVector {
 
   // Добавляем шарик в соответствующие ячейки
   addBall(ball) {
-    const {x, y, radius} = ball;
+    const { x, y, radius } = ball;
 
     // Определяем ячейки, которые пересекает шарик
     const X = Math.floor(x / this.cellSize);
@@ -73,7 +73,7 @@ class UniformGridVector {
   }
   // Получаем потенциальные коллизии для заданного шарика
   getPotentialCollisions(ball) {
-    const {x, y, radius} = ball;
+    const { x, y, radius } = ball;
     const potentialCollisions = [];
 
     const X = Math.floor(x / this.cellSize);
@@ -120,14 +120,18 @@ class UniformGridVector {
     const collisions = [];
     const currentCellIndex = cellY * this.gridWidth + cellX;
     // check bounds
-    if (cellX < 0 || cellX >= this.gridWidth || cellY < 0 ||
-        cellY >= this.gridHeight) {
+    if (
+      cellX < 0 ||
+      cellX >= this.gridWidth ||
+      cellY < 0 ||
+      cellY >= this.gridHeight
+    ) {
       return collisions;
     }
     if (checkedCells[currentCellIndex]) {
-      return collisions;  // Ячейка уже проверена
+      return collisions; // Ячейка уже проверена
     }
-    checkedCells[currentCellIndex] = true;  // Отмечаем ячейку как проверенную
+    checkedCells[currentCellIndex] = true; // Отмечаем ячейку как проверенную
 
     const currentCellBalls = this.cells[currentCellIndex];
 
@@ -143,13 +147,17 @@ class UniformGridVector {
     // Проверяем шарики с соседними ячейками
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
-        if (i === 0 && j === 0) continue;  // Пропускаем текущую ячейку
+        if (i === 0 && j === 0) continue; // Пропускаем текущую ячейку
 
         const neighborX = cellX + i;
         const neighborY = cellY + j;
 
-        if (neighborX >= 0 && neighborX < this.gridWidth && neighborY >= 0 &&
-            neighborY < this.gridHeight) {
+        if (
+          neighborX >= 0 &&
+          neighborX < this.gridWidth &&
+          neighborY >= 0 &&
+          neighborY < this.gridHeight
+        ) {
           const neighborCellIndex = neighborY * this.gridWidth + neighborX;
           if (!checkedCells[neighborCellIndex]) {
             const neighborCellBalls = this.cells[neighborCellIndex];
@@ -179,8 +187,7 @@ class UniformGridVector {
     const halfWidth_up = Math.ceil(this.gridWidth / 4);
     const halfWidth_down = Math.floor(this.gridWidth / 4);
     const collisions = [];
-    const checkedCells = Array(this.gridWidth * this.gridHeight)
-                             .fill(false);  // Инициализируем массив проверок
+    const checkedCells = Array(this.gridWidth * this.gridHeight).fill(false); // Инициализируем массив проверок
 
     // Функция для обработки ячеек в параллельном потоке
     const processColumns = (startCol, endCol) => {
@@ -195,25 +202,26 @@ class UniformGridVector {
 
     // Создаем Parallel.js поток
     const parallel = new Parallel([
-      {start: 0, end: halfWidth_up},
-      {start: 2 * halfWidth_down, end: 3 * halfWidth_up},
-      {start: halfWidth_down, end: 2 * halfWidth_up},
-      {start: 3 * halfWidth_down, end: this.gridWidth}
+      { start: 0, end: halfWidth_up },
+      { start: 2 * halfWidth_down, end: 3 * halfWidth_up },
+      { start: halfWidth_down, end: 2 * halfWidth_up },
+      { start: 3 * halfWidth_down, end: this.gridWidth },
     ]);
 
     // Запускаем параллельные вычисления
-    return parallel.map(({start, end}) => processColumns(start, end))
-        .then(results => {
-          results.forEach(result => collisions.push(...result));
-          return collisions;
-        });
+    return parallel
+      .map(({ start, end }) => processColumns(start, end))
+      .then((results) => {
+        results.forEach((result) => collisions.push(...result));
+        return collisions;
+      });
   }
 }
 class UniformGridMap {
   constructor(cellSize, maxRadius) {
-    this.cellSize = cellSize;  // Размер ячейки сетки
-    this.maxRadius = maxRadius;  // Максимальный радиус шарика
-    this.grid = new Map();  // Храним объекты в сетке как хэш-карту
+    this.cellSize = cellSize; // Размер ячейки сетки
+    this.maxRadius = maxRadius; // Максимальный радиус шарика
+    this.grid = new Map(); // Храним объекты в сетке как хэш-карту
   }
   // Метод для очистки сетки перед обновлением
   clear() {
@@ -221,7 +229,7 @@ class UniformGridMap {
   }
   // Добавляем шарик в сетку
   addBall(ball) {
-    const {x, y, radius} = ball;
+    const { x, y, radius } = ball;
     // Находим все ячейки, которые может пересекать шарик
     const minX = Math.floor((x - radius) / this.cellSize);
     const maxX = Math.floor((x + radius) / this.cellSize);
@@ -247,7 +255,7 @@ class UniformGridMap {
   // Метод для получения всех возможных коллизий
   getPotentialCollisions(ball) {
     const potentialCollisions = [];
-    const {x, y, radius} = ball;
+    const { x, y, radius } = ball;
     // Находим все ячейки, которые пересекает данный шарик
     const minX = Math.floor((x - radius) / this.cellSize);
     const maxX = Math.floor((x + radius) / this.cellSize);
@@ -292,7 +300,7 @@ class HashVector {
   }
 
   hashCoords(xi, yi) {
-    var h = (xi * 92837111) ^ (yi * 689287499);  // fantasy function
+    var h = (xi * 92837111) ^ (yi * 689287499); // fantasy function
     return Math.abs(h) % this.tableSize;
   }
 
@@ -322,7 +330,7 @@ class HashVector {
       start += this.cellStart[i];
       this.cellStart[i] = start;
     }
-    this.cellStart[this.tableSize] = start;  // guard
+    this.cellStart[this.tableSize] = start; // guard
 
     // fill in objects ids
 
@@ -355,19 +363,19 @@ class HashVector {
       }
     }
   }
-};
+}
 
 all_pairs_namespace.System = class {
   constructor(hash_type) {
     this.hash_type = hash_type;
     this.parameters = new all_pairs_namespace.Parameters();
-    this.initialyzeSystem();
+    // this.initialyzeSystem();
   }
   reset() {
     this.initialyzeSystem();
   }
   initialyzeSystem() {
-    this.t = 0.;
+    this.t = 0;
     const n_points = this.parameters.num_points;
     // calculate min and max mass based on the number of points and space
     let space = this.parameters.width * this.parameters.height;
@@ -375,12 +383,18 @@ all_pairs_namespace.System = class {
     let radius = Math.sqrt(space_per_points) / 3.14;
     let mass_min = radius * radius;
     // let mass_max = mass_min;
-    let mass_max = 10 * mass_min;
+    let mass_max = this.parameters.mass_ratio * mass_min;
 
     this.points = [];
     for (let i = 0; i < n_points; i++) {
-      this.points.push(new all_pairs_namespace.Ball(
-          this.parameters.width, this.parameters.height, mass_min, mass_max));
+      this.points.push(
+        new all_pairs_namespace.Ball(
+          this.parameters.width,
+          this.parameters.height,
+          mass_min,
+          mass_max
+        )
+      );
     }
 
     this.max_radius = 0;
@@ -389,15 +403,18 @@ all_pairs_namespace.System = class {
         this.max_radius = point.radius;
       }
     }
-    if (this.hash_type == 'uniform_grid_vector') {
+    if (this.hash_type == "uniform_grid_vector") {
       this.grid_vector = new UniformGridVector(
-          this.parameters.width, this.parameters.height, 4.0 * this.max_radius,
-          n_points);
+        this.parameters.width,
+        this.parameters.height,
+        4.0 * this.max_radius,
+        n_points
+      );
     }
-    if (this.hash_type == 'uniform_grid_map') {
+    if (this.hash_type == "uniform_grid_map") {
       this.grid_map = new UniformGridMap(this.max_radius * 2, this.max_radius);
     }
-    if (this.hash_type == 'hash_vector') {
+    if (this.hash_type == "hash_vector") {
       this.hash = new HashVector(4.0 * this.max_radius, n_points);
     }
   }
@@ -405,29 +422,29 @@ all_pairs_namespace.System = class {
     for (let step = 0; step < this.parameters.sub_steps; step++) {
       this.t += this.parameters.dt;
       this.calcPoints(is_mouse, mouse_x, mouse_y);
-      if (this.hash_type == 'uniform_grid_vector') {
+      if (this.hash_type == "uniform_grid_vector") {
         this.grid_vector.init(this.points);
       }
-      if (this.hash_type == 'uniform_grid_map') {
+      if (this.hash_type == "uniform_grid_map") {
         this.grid_map.init(this.points);
       }
-      if (this.hash_type == 'hash_vector') {
+      if (this.hash_type == "hash_vector") {
         this.hash.init(this.points);
       }
 
       for (let i = 0; i < 2; i++) {
         this.fixWallAllPoints();
         let all_ok = false;
-        if (this.hash_type == 'brute_force') {
-           all_ok = this.relaxAllPoints();
+        if (this.hash_type == "brute_force") {
+          all_ok = this.relaxAllPoints();
         }
-        if (this.hash_type == 'uniform_grid_vector') {
+        if (this.hash_type == "uniform_grid_vector") {
           all_ok = this.relaxAllPointsUniformGridVector(true);
         }
-        if (this.hash_type == 'uniform_grid_map') {
+        if (this.hash_type == "uniform_grid_map") {
           all_ok = this.relaxAllPointsUniformGridMap(true);
         }
-        if (this.hash_type == 'hash_vector') {
+        if (this.hash_type == "hash_vector") {
           all_ok = this.relaxAllPointsHashVector(true);
         }
       }
@@ -441,10 +458,10 @@ all_pairs_namespace.System = class {
       let distance = Math.sqrt(dx * dx + dy * dy);
       if (distance < this.max_radius) {
         let f = force / (distance + 1);
-        point.ax += f * dx / distance;
-        point.ay += f * dy / distance;
-        point.vx += f * dx / distance * this.parameters.dt;
-        point.vy += f * dy / distance * this.parameters.dt;
+        point.ax += (f * dx) / distance;
+        point.ay += (f * dy) / distance;
+        point.vx += ((f * dx) / distance) * this.parameters.dt;
+        point.vy += ((f * dy) / distance) * this.parameters.dt;
       }
     }
   }
@@ -485,9 +502,9 @@ all_pairs_namespace.System = class {
     }
   }
   fixPossition(point1, point2, distance) {
-    let overlap = ((point1.radius + point2.radius) - distance) * 1.1;
-    let moveX = overlap * (point2.x - point1.x) / distance / 2;
-    let moveY = overlap * (point2.y - point1.y) / distance / 2;
+    let overlap = (point1.radius + point2.radius - distance) * 1.1;
+    let moveX = (overlap * (point2.x - point1.x)) / distance / 2;
+    let moveY = (overlap * (point2.y - point1.y)) / distance / 2;
     point1.x -= moveX;
     point1.y -= moveY;
     point2.x += moveX;
@@ -510,7 +527,7 @@ all_pairs_namespace.System = class {
 
     let restitution = this.parameters.restitution;
     // Calculate the scalar for updating velocities
-    let scalar = restitution * (2 * dotProduct) / (ball1.mass + ball2.mass);
+    let scalar = (restitution * (2 * dotProduct)) / (ball1.mass + ball2.mass);
 
     // Update velocities based on the mass and normal vector
     ball1.vx += scalar * ball2.mass * nx;
@@ -528,7 +545,9 @@ all_pairs_namespace.System = class {
       if (with_collisions) {
         this.collide(point1, point2);
       } else {
-        this.fixPossition(point1, point2, distance);
+        if (this.P.relax_position) {
+          this.fixPossition(point1, point2, distance);
+        }
       }
     }
     return all_ok;
@@ -557,7 +576,7 @@ all_pairs_namespace.System = class {
     return all_ok;
   }
   relaxAllPointsUniformGridVectorParallel(with_collisions = true) {
-    this.grid_vector.checkCollisionsParallel().then(collisions => {
+    this.grid_vector.checkCollisionsParallel().then((collisions) => {
       for (let [point1, point2] of collisions) {
         if (point1 !== point2) {
           this.relax(point1, point2, with_collisions);
@@ -610,13 +629,13 @@ all_pairs_namespace.Visualizer = class {
       p5.circle(point.x, point.y, 2 * point.radius);
     }
     p5.colorMode(p5.RGB);
-    if (this.method == 'uniform_grid_vector') {
+    if (this.method == "uniform_grid_vector") {
       this.drawGridVector(p5, system);
     }
-    if (this.method == 'uniform_grid_map') {
+    if (this.method == "uniform_grid_map") {
       this.drawGridMap(p5, system);
     }
-    if (this.method == 'hash_vector') {
+    if (this.method == "hash_vector") {
       this.drawHashVector(p5, system);
     }
     // bellow text white background
@@ -625,7 +644,7 @@ all_pairs_namespace.Visualizer = class {
     p5.rect(0, 0, 70, 30, 10);
     // fps text
     p5.fill(0);
-    p5.text('FPS: ' + Math.round(p5.frameRate()), 10, 10, 70, 80);
+    p5.text("FPS: " + Math.round(p5.frameRate()), 10, 10, 70, 80);
   }
   drawGridVector(p5, system) {
     const grid_vector = system.grid_vector;
@@ -640,7 +659,7 @@ all_pairs_namespace.Visualizer = class {
       }
     }
   }
-  drawGridMap(p5, system) { 
+  drawGridMap(p5, system) {
     const grid_map = system.grid_map;
     p5.stroke(40);
     p5.strokeWeight(1);
@@ -650,8 +669,7 @@ all_pairs_namespace.Visualizer = class {
       let x = (key / 1000000) * grid_map.cellSize;
       let y = (key % 1000000) * grid_map.cellSize;
       p5.rect(x, y, grid_map.cellSize, grid_map.cellSize);
-      }
-      
+    }
   }
   drawHashVector(p5, system) {
     // const hash = system.hash;
@@ -669,38 +687,54 @@ all_pairs_namespace.Visualizer = class {
 };
 
 all_pairs_namespace.AllPairsInterface = class {
-  constructor(base_name, method) {
+  constructor(base_name, method, fixed_value = false) {
     this.method = method;
     this.system = new all_pairs_namespace.System(method);
     this.visualizer = new all_pairs_namespace.Visualizer(method);
     this.base_name = base_name;
+    this.fixed_value = fixed_value;
   }
   iter(p5) {
     let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
     this.newSimulation();
+    is_mouse = is_mouse && !this.fixed_value;
     this.system.calcSystem(is_mouse, mouse_x, mouse_y);
     this.visualizer.draw(p5, this.system);
-
   }
   setup(p5, base_name) {
     p5.setFrameRate(60);
     this.system.parameters.width = p5.width;
     this.system.parameters.height = p5.height - 10;
-    {
-      let [div_m_1, div_m_2] =
-          ui_namespace.createDivsForSlider(base_name, '1', 'balls');
-      this.slider1 = ui_namespace.createSlider(div_m_1, 10, 5000, 4990, 400);
-      this.output1 = ui_namespace.createOutput(div_m_2);
-      this.output1.innerHTML = this.slider1.value;
+    if (this.fixed_value) {
+      this.n_balls = this.system.parameters.num_points;
+      this.system.parameters.g = 0;
+      this.system.parameters.relax_position = false;
+      this.system.parameters.mass_ratio = 1.0;
+      this.system.parameters.dt = 0.01;
+    } else {
+      {
+        let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+          base_name,
+          "1",
+          "balls"
+        );
+        this.slider1 = ui_namespace.createSlider(div_m_1, 10, 5000, 4990, 400);
+        this.output1 = ui_namespace.createOutput(div_m_2);
+        this.output1.innerHTML = this.slider1.value;
+      }
+      this.slider1.oninput = function () {
+        this.output1.innerHTML = this.slider1.value;
+      }.bind(this);
+      this.n_balls = this.slider1.value;
+      this.system.parameters.num_points = this.slider1.value;
     }
-    this.slider1.oninput = function() {
-      this.output1.innerHTML = this.slider1.value;
-    }.bind(this);
-    this.n_balls = this.slider1.value;
-    this.system.parameters.num_points = this.slider1.value;
     this.system.initialyzeSystem();
   }
   newSimulation() {
+    if (this.fixed_value) {
+      return;
+    }
+
     let n_balls = this.slider1.value;
     if (this.n_balls != n_balls) {
       this.iter_new_simul = 4;
@@ -715,7 +749,9 @@ all_pairs_namespace.AllPairsInterface = class {
     }
   }
   reset() {
-    this.system.parameters.num_points = this.slider1.value;
+    if (!this.fixed_value) {
+      this.system.parameters.num_points = this.slider1.value;
+    }
     this.system.reset();
   }
 };
