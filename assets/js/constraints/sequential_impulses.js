@@ -1,6 +1,7 @@
 import color_scheme from "../../js/common/color_scheme.min.js";
 import ui_namespace from "../../js/common/ui.min.js";
 
+
 let sequential_impulses = {};
 class PendulumParameters {
   constructor() {
@@ -74,7 +75,6 @@ class PendulumVisualizer {
   }
 }
 sequential_impulses.PendulumInterface = class {
-
   constructor(base_name) {
     this.system = new Pendulum();
     this.visualizer = new PendulumVisualizer(this.system);
@@ -94,7 +94,6 @@ sequential_impulses.PendulumInterface = class {
     this.system.reset();
   }
 };
-
 
 class DoublePendulum {
   constructor() {
@@ -232,28 +231,10 @@ sequential_impulses.DoublePendulumInterface = class {
     this.visualizer = new DoublePendulumVisualizer(this.system);
     this.base_name = base_name;
   }
-  mouseLogic(p5) {
-    // get from p5 mouse position
-    let mouse_x = p5.mouseX;
-    let mouse_y = p5.mouseY;
-    // if left mouse button is pressed
-    let is_mouse = true;
-    if (
-      mouse_x < 0 ||
-      mouse_x > p5.width ||
-      mouse_y < 0 ||
-      mouse_y > p5.height
-    ) {
-      is_mouse = false;
-    }
-    if (p5.mouseIsPressed == false) {
-      is_mouse = false;
-    }
-    return [is_mouse, mouse_x, mouse_y];
-  }
+
   iter(p5) {
     // get from p5 mouse position
-    let [is_mouse, mouse_x, mouse_y] = this.mouseLogic(p5);
+    let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
     this.system.calcSystem(is_mouse, mouse_x, mouse_y, this.slider1.value);
     this.visualizer.draw(p5, this.system);
   }
@@ -262,14 +243,11 @@ sequential_impulses.DoublePendulumInterface = class {
     this.system.P.height = p5.height;
     this.system.P.length = 100;
     this.system.init();
-
-
-
- {
+    {
       let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
         this.base_name,
         "1",
-        "λ"
+        "ß"
       );
       this.slider1 = ui_namespace.createSlider(div_m_1, 0, 1, 100);
       this.output1 = ui_namespace.createOutput(div_m_2);
