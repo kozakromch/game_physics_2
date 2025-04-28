@@ -7,7 +7,9 @@ class Parameters {
     this.friction = 0.3; // коэффициент трения
     this.restitution = 0.99; // коэффициент упругости
     this.floor = 300;
-
+    this.width = 800; // ширина окна
+    this.height = 600; // высота окна
+    this.simple = false; // флаг для упрощенной версии
   }
 }
 
@@ -26,17 +28,18 @@ function dot2D(a, b) {
 }
 
 class RigidBody {
-  constructor(position, angle, velocity, P, size) {
-    this.P = P; 
+  constructor(position, angle, velocity, angularVelocity, P, size) {
+    this.P = P;
     this.position = position.clone();
     this.angle = angle;
     this.velocity = velocity.clone();
-    this.angularVelocity = 1.5; // начальная угловая скорость
+    this.angularVelocity = angularVelocity; // начальная угловая скорость
 
     this.size = size; // { width: число, height: число }
     this.mass = 1;
     // Момент инерции прямоугольника:
-    this.inertia = (1 / 12) * this.mass * (this.size.width ** 2 + this.size.height ** 2);
+    this.inertia =
+      (1 / 12) * this.mass * (this.size.width ** 2 + this.size.height ** 2);
   }
 
   integratePositions(dt) {
@@ -71,7 +74,7 @@ class RigidBody {
 
     let tangentVelocity = math.matrix([
       -this.angularVelocity * getY(r),
-      this.angularVelocity * getX(r)
+      this.angularVelocity * getX(r),
     ]);
 
     let vContact = math.add(this.velocity, tangentVelocity);
@@ -85,7 +88,10 @@ class RigidBody {
     let j = (-(1 + this.P.restitution) * vRel) / denom;
     let impulse = math.multiply(normal, j);
 
-    this.velocity = math.add(this.velocity, math.multiply(impulse, 1 / this.mass));
+    this.velocity = math.add(
+      this.velocity,
+      math.multiply(impulse, 1 / this.mass)
+    );
     this.angularVelocity += cross2D(r, impulse) / this.inertia;
   }
 
@@ -96,7 +102,7 @@ class RigidBody {
       math.matrix([-halfWidth, -halfHeight]),
       math.matrix([halfWidth, -halfHeight]),
       math.matrix([halfWidth, halfHeight]),
-      math.matrix([-halfWidth, halfHeight])
+      math.matrix([-halfWidth, halfHeight]),
     ];
 
     let cosA = Math.cos(this.angle);
@@ -106,7 +112,7 @@ class RigidBody {
     for (let v of verts) {
       let rotated = math.matrix([
         cosA * getX(v) - sinA * getY(v),
-        sinA * getX(v) + cosA * getY(v)
+        sinA * getX(v) + cosA * getY(v),
       ]);
       result.push(math.add(this.position, rotated));
     }
@@ -120,10 +126,19 @@ class System {
   }
 
   init() {
+    let angle = 0.1;
+    let ang_vel = 1.5;
+    let velocity = math.matrix([100, 300]);
+    if (this.P.simple) {
+      angle = 0;
+      ang_vel = 0;
+      velocity = math.matrix([0, 200]);
+    }
     this.body = new RigidBody(
       math.matrix([this.P.width / 2, 100]), // начальная позиция
-      0.1, // начальный угол
-      math.matrix([100, 300]), // начальная скорость
+      angle,
+      velocity,
+      ang_vel,
       this.P,
       { width: 80, height: 40 } // разные ширина и высота
     );
@@ -150,10 +165,11 @@ class Visualizer {
 let impulses_cube = {};
 
 impulses_cube.Interface = class {
-  constructor(base_name) {
+  constructor(base_name, simple = false) {
     this.system = new System();
     this.visualizer = new Visualizer();
     this.base_name = base_name;
+    this.simple = simple;
   }
 
   iter(p5) {
@@ -167,6 +183,7 @@ impulses_cube.Interface = class {
     this.system.P.height = p5.height;
     this.system.P.floor = p5.height - 5;
     this.system.init();
+    this.system.P.simple = this.simple;
   }
 
   reset() {

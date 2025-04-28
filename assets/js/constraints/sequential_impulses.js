@@ -1,15 +1,15 @@
 import color_scheme from "../../js/common/color_scheme.min.js";
 import ui_namespace from "../../js/common/ui.min.js";
 
-
 let sequential_impulses = {};
 class PendulumParameters {
   constructor() {
     this.g = 10000;
-    this.dt = 0.005;
+    this.dt = 0.0005;
     this.width = 800;
     this.height = 800;
     this.length = 80;
+    this.substeps = 10;
   }
 }
 class Pendulum {
@@ -181,12 +181,14 @@ class DoublePendulum {
       this.mass2.pos.x = mouse_x;
       this.mass2.pos.y = mouse_y;
     }
-    this.applyGravity();
-    this.integrate();
-    this.satisfyConstraints(beta);
-    if (is_mouse) {
-      this.mass2.pos.x = mouse_x;
-      this.mass2.pos.y = mouse_y;
+    for (let i = 0; i < this.P.substeps; i++) {
+      this.applyGravity();
+      this.integrate();
+      this.satisfyConstraints(beta);
+      if (is_mouse) {
+        this.mass2.pos.x = mouse_x;
+        this.mass2.pos.y = mouse_y;
+      }
     }
   }
 }
