@@ -13,6 +13,7 @@ sidebar:
 
 {{< add_script "js/constraints/sequential_impulses.js" >}}
 {{< add_script "js/constraints/impulses_cube.js" >}}
+{{< add_script "js/collisions/broadphase/all_pairs.js" >}}
 
 В предыдущих методах мы решали ограничения с помощью манипуляций позиций и поворотов тел.
 Он отлично работает для симуляции мягких тел, волос, тканей и прочего. Наиболее успещный метод среди позиционных -- XPBD.

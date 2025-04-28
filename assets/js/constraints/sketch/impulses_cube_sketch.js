@@ -5,6 +5,6 @@ import p5 from '../../../js/libs/p5.min.js';
 {
   let my_interface = new impulses_cube.Interface("impulses_cube_sketch", false);
   let main_visualizator =
-      main_visualizator_namespace.getMainVisualizator(my_interface, true);
+      main_visualizator_namespace.getMainVisualizator(my_interface, false);
   new p5(main_visualizator);
 }
