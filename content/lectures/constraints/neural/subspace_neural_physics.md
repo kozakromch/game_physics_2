@@ -9,11 +9,6 @@ sidebar:
   open: true
 ---
 
-{{< publish_obj path="info/subspace_neural_physics/cloth_parameters.csv" >}}
-{{< publish_obj path="info/subspace_neural_physics/cloth_simulation_data_pca.csv">}}
-{{< publish_obj path="info/subspace_neural_physics/cloth_simulation_data.csv" >}}
-
-{{< add_script "js/constraints/subspace_neural_physics.js" >}}
 
 ## Введение
 Предположим, что мы хотим смоделировать физику конкретного объекта, например плаща героя или чего-нибудь еще. Этот плащ очень детализированный, но мы понимаем, что нам нужна реакция плаща только на движение героя и допустим не нужно учитывать взаимодействие с другими объектами.
@@ -25,8 +20,6 @@ sidebar:
 
 
 
-
-{{< include_sketch path="constraints/sketch/subspace_neural_physics_simple_sketch.js" base_name="subspace_neural_physics_simple_sketch" >}}
 
 
 
