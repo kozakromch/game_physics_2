@@ -10,3 +10,7 @@ Cargo.lock
 # DS_Store everywhere
 **/.DS_Store
 
+# python
+__pycache__/
+
+.DS_Store
