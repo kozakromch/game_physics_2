@@ -7,9 +7,9 @@ next:
 toc: true
 math: true
 ---
-{{< add_script "js/numerical_method/3_body.js" >}}
-{{< add_script "js/numerical_method/canon.js" >}}
-{{< add_script "js/numerical_method/spring.js" >}}
+{{< add_script "js/math/numerical_method/3_body.js" >}}
+{{< add_script "js/math/numerical_method/canon.js" >}}
+{{< add_script "js/math/numerical_method/spring.js" >}}
 
 
 ### Прямой метод Эйлера
@@ -57,7 +57,7 @@ $$
 
 {{</details>}}
 
-{{< include_sketch path="numerical_method/sketch/forward_euler_canon.js" base_name="forward_euler_canon" >}}
+{{< include_sketch path="math/numerical_method/sketch/forward_euler_canon.js" base_name="forward_euler_canon" >}}
 
 Результат неплохой, но ошибка накапливается, и движение начинает отклоняться от аналитического решения.
 
@@ -81,7 +81,7 @@ $$
 
 {{< /details >}}
 
-{{< include_sketch path="numerical_method/sketch/forward_euler_spring.js" base_name="forward_euler_spring" >}}
+{{< include_sketch path="math/numerical_method/sketch/forward_euler_spring.js" base_name="forward_euler_spring" >}}
 
 Здесь уже видно возрастание энергии, что не является желательным. Уменьшение шага по времени лишь частично решает проблему — энергия все равно будет расти, но медленнее.
 
@@ -330,10 +330,10 @@ z_{k} = F^{-1}\cdot(z_{k-1} + G\cdot\Delta t)
 $$
 {{< /details >}}
 
-{{< include_sketch path="numerical_method/sketch/backward_euler_canon.js" base_name="backward_euler_canon" >}}
+{{< include_sketch path="math/numerical_method/sketch/backward_euler_canon.js" base_name="backward_euler_canon" >}}
 Ситуация с энергией в обратном Эйлере обратная. Она убывает. И на баллистической кривой это нормально.
 
-{{< include_sketch path="numerical_method/sketch/backward_euler_spring.js" base_name="backward_euler_spring" >}}
+{{< include_sketch path="math/numerical_method/sketch/backward_euler_spring.js" base_name="backward_euler_spring" >}}
 А вот здесь получается демпфированная пружинка. Из плюсов такой численной схемы. Пружинка безусловно устойчива. Но энергия будет постоянно уходить.
 
 {{<details title="Почему в обратном методе Эйлера энергия убывает" closed="true">}}

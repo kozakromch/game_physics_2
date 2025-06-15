@@ -7,9 +7,9 @@ toc: true
 math: true
 ---
 
-{{< add_script "js/numerical_method/3_body.js" >}}
-{{< add_script "js/numerical_method/canon.js" >}}
-{{< add_script "js/numerical_method/spring.js" >}}
+{{< add_script "js/math/numerical_method/3_body.js" >}}
+{{< add_script "js/math/numerical_method/canon.js" >}}
+{{< add_script "js/math/numerical_method/spring.js" >}}
 {{< add_script "js/common/sinusoidal_vis.js" >}}
 
 
@@ -18,7 +18,7 @@ math: true
 То ли мы глупые, то ли вселенная такая несовершенная, но многие дифференциальные уравнения невозможно решить аналитически. Например, меня удивляет, что задача трех тел уже неразрешима. 
 С другой стороны, если бы такие траектории можно было описать аналитически, это было бы очень круто. Вы только взгляните, какая красота:
 
-{{% include_sketch path="numerical_method/sketch/3_body_sketch.js" base_name="three_body_sketch"%}}
+{{% include_sketch path="math/numerical_method/sketch/3_body_sketch.js" base_name="three_body_sketch"%}}
 
 В играх приходится иметь дело с системами гораздо сложнее, чем взаимодействие трех тел, которые тоже вряд ли получится решить аналитически. Поэтому много умных людей разработали численные методы. Базовая идея такова: имея начальную точку, получаем лишь одно решение, в то время как аналитический метод дает все решения. Но в большинстве случаев нам нужно только одно. В игре уже есть начальное состояние, и мы просто хотим узнать, что будет дальше.
 
@@ -128,7 +128,7 @@ $$
 \end{equation}
 $$
 
-{{< include_sketch path="numerical_method/sketch/analitical_canon.js" base_name="analitical_canon" >}}
+{{< include_sketch path="math/numerical_method/sketch/analitical_canon.js" base_name="analitical_canon" >}}
 
 
 ### Пружинка
@@ -176,5 +176,5 @@ $$
 \end{equation}
 $$
 
-{{< include_sketch path="numerical_method/sketch/analitical_spring.js" base_name="analitical_spring" >}}
+{{< include_sketch path="math/numerical_method/sketch/analitical_spring.js" base_name="analitical_spring" >}}
 

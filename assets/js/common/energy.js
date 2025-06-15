@@ -1,4 +1,4 @@
-import color_scheme from './color_scheme.min.js';
+import color_scheme from '/game_physics_2/js/common/color_scheme.min.js';
 
 let energy_namespace = {};
 energy_namespace.Energy = class {

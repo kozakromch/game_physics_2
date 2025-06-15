@@ -247,3 +247,17 @@ $$
 Когда мы разрешаем первое ограничение, то для нас кубик двигался просто вниз к полу. Мы толкнули его вверх из первой точки. И он стал вращаться. Когда мы разрешаем второе ограничение, то он уже вращается. И мы толкаем его вверх из второй точки с учетом этого вращения и отражаем это вращение от второй точки. 
 
 Это незнание ограничений друг о друге приводит к множеству проблем. И нужно что-то придумать, чтобы это исправить. Метод Sequential Impulses как раз и решает эту проблему.
+
+<p></p>
+<div class="not-prose">
+<div class="container">
+<div class="row">
+  <div class="col" style="margin-top: 3%;">
+  {{< card link="sequential_impulses" title="Sequential Impulses" image="images/constraints/hitman/main.excalidraw.png" icon="book-open" >}}
+  </div>
+  <div class="col" style="margin-top: 3%;">
+  {{< card link="soft_constraints" title="Soft constraints" image="images/constraints/soft_constraints/main.excalidraw.png" icon="book-open" >}}
+  </div>
+</div>
+</div>
+</div>

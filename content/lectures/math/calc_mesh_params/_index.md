@@ -7,7 +7,7 @@ math: true
 ---
 
 
-{{< add_script "js/calc_mesh_params/shoelace.js" >}}
+{{< add_script "js/math/calc_mesh_params/shoelace.js" >}}
 
 
 Имея на руках меш, можно рассчитать различные параметры:
@@ -42,4 +42,4 @@ S = \frac{1}{2} \left| \sum_{i=1}^{n-1} x_i y_{i+1} + x_n y_1 - y_i x_{i+1} - y_
 $$
 
 
-{{< include_sketch path="calc_mesh_params/sketch/shoelace_sketch.js" base_name="shoelace_sketch" >}}
+{{< include_sketch path="math/calc_mesh_params/sketch/shoelace_sketch.js" base_name="shoelace_sketch" >}}

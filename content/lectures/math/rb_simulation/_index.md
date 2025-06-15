@@ -5,6 +5,7 @@ type: docs
 toc: true
 math: true
 ---
+{{< add_script "js/math/rb_simulation/rb_free.js" >}}
 
 ## Введение
 
@@ -14,7 +15,6 @@ math: true
 
 В реальной жизни это не так. Например, если вы возьмете резиновый мяч и бросите его, он будет деформироваться. Но в большинстве случаев это несущественно.
 
-{{< add_script "js/math/rb_simulation/rb_free.js" >}}
 
 {{% include_sketch path="math/rb_simulation/sketch/dzhanibekov.js" base_name="dzhanibekov"%}}
 {{% include_sketch path="math/rb_simulation/sketch/dzhanibekov_implicit.js" base_name="dzhanibekov_implicit"%}}

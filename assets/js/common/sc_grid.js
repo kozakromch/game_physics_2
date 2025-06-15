@@ -1,6 +1,6 @@
-import Scribble from '../../js/libs/p5.scribble.min.js';
+import Scribble from '/game_physics_2/js/libs/p5.scribble.min.js';
 
-import color_scheme from './color_scheme.min.js';
+import color_scheme from '/game_physics_2/js/common/color_scheme.min.js';
 
 let sc_grid_namespace = {};
 // class sc_grid that is used to create a grid of cells using p5 on canvas

@@ -1,6 +1,6 @@
-import base_canvas_namespace from "./base_vis.min.js";
-import color_scheme from "./color_scheme.min.js";
-import sc_grid_namespace from "./sc_grid.min.js";
+import base_canvas_namespace from "/game_physics_2/js/common/base_vis.min.js";
+import color_scheme from "/game_physics_2/js/common//color_scheme.min.js";
+import sc_grid_namespace from "/game_physics_2/js/common/sc_grid.min.js";
 
 let main_visualizator_namespace = {};
 main_visualizator_namespace.getMainVisualizator = function (
@@ -62,7 +62,11 @@ main_visualizator_namespace.getMainVisualizator = function (
       p5.text(text, text_x, text_y);
       p5.textSize(15);
     };
-    p5.preload = function () {};
+    p5.preload = function () {
+      if (context.preload !== undefined) {
+        context.preload();
+      }
+    };
     p5.setup = function () {
       p5.disableFriendlyErrors = true;
       p5.frameRate(30);

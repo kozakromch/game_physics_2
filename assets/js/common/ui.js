@@ -16,13 +16,14 @@ ui_namespace.createSlider = function (div, min, max, steps = 100, value) {
   slider.setAttribute("max", max);
   slider.setAttribute("class", "align-middle");
   slider.setAttribute("style", "width:100%");
-  if (value) {
-    slider.value = value;
-  } else {
-    slider.value = (max - min) / 2;
-  }
   slider.step = (max - min) / steps;
   slider.id = div.id + "slider";
+  // Use value if provided, otherwise use midpoint
+  if (typeof value !== "undefined") {
+    slider.value = value;
+  } else {
+    slider.value = min + (max - min) / 2;
+  }
   document.getElementById(div.id).appendChild(slider);
   return slider;
 };
