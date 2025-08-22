@@ -1,0 +1,40 @@
+# Centralized data paths for cloth simulation project
+from params import DIRECTORY
+
+# Original cloth simulation paths
+NODES_PCA = DIRECTORY + 'nodes_pca.npy'
+SPHERE_PCA = DIRECTORY + 'sphere_pca.npy'
+NODES_PCA_MEAN = DIRECTORY + 'nodes_pca_mean.npy'
+NODES_MIN = DIRECTORY + 'nodes_min.npy'
+SPHERE_PCA_MEAN = DIRECTORY + 'sphere_pca_mean.npy'
+SPHERE_MIN = DIRECTORY + 'sphere_min.npy'
+NODES_MAX = DIRECTORY + 'nodes_max.npy'
+SPHERE_MAX = DIRECTORY + 'sphere_max.npy'
+NODES_ALPHA = DIRECTORY + 'nodes_alpha.npy'
+NODES_BETA = DIRECTORY + 'nodes_beta.npy'
+NODES_PCA_TRANSFORM = DIRECTORY + 'nodes_pca_transform.npy'
+SPHERE_PCA_TRANSFORM = DIRECTORY + 'sphere_pca_transform.npy'
+CLOTH_NODES_POS = DIRECTORY + 'nodes_pos.npy'
+SPHERE_POS = DIRECTORY + 'sphere_pos.npy'
+
+# Stable soft body simulation paths (same as original for compatibility)
+STABLE_NODES_PCA = DIRECTORY + 'nodes_pca.npy'
+STABLE_SPHERE_PCA = DIRECTORY + 'sphere_pca.npy'
+STABLE_NODES_PCA_MEAN = DIRECTORY + 'nodes_pca_mean.npy'
+STABLE_NODES_MIN = DIRECTORY + 'nodes_min.npy'
+STABLE_SPHERE_PCA_MEAN = DIRECTORY + 'sphere_pca_mean.npy'
+STABLE_SPHERE_MIN = DIRECTORY + 'sphere_min.npy'
+STABLE_NODES_MAX = DIRECTORY + 'nodes_max.npy'
+STABLE_SPHERE_MAX = DIRECTORY + 'sphere_max.npy'
+STABLE_NODES_ALPHA = DIRECTORY + 'nodes_alpha.npy'
+STABLE_NODES_BETA = DIRECTORY + 'nodes_beta.npy'
+STABLE_NODES_PCA_TRANSFORM = DIRECTORY + 'nodes_pca_transform.npy'
+STABLE_SPHERE_PCA_TRANSFORM = DIRECTORY + 'sphere_pca_transform.npy'
+STABLE_NODES_POS = DIRECTORY + 'nodes_pos.npy'
+STABLE_SPHERE_POS = DIRECTORY + 'sphere_pos.npy'
+
+# CLOTH_SIM_CSV = DIRECTORY + 'simulation_data.csv'
+# CLOTH_SPHERE_SIM_CSV = DIRECTORY + 'sphere_simulation_data.csv'
+# SPHERE_POSITIONS_CSV = DIRECTORY + 'sphere_positions.csv'
+# CLOTH_PARAMETERS_CSV = DIRECTORY + 'parameters.csv'
+# CLOTH_SIM_PCA_CSV = DIRECTORY + 'simulation_data_pca.csv'
