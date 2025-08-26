@@ -8,6 +8,39 @@ toc: true
 sidebar:
   open: true
 ---
+{{< add_script "js/constraints/rigid_body_simulation.js" >}}
+
+
+Этот метод -- естественное развитие разрешения ограничений на уровне скоростей.
+Он был популяризован Erin Catto.
+В прошлом методе мы остановились на том, что разрешая несколько ограничений одновременно мы получали странный результат.
+
+Основная проблема -- каждое ограничение не знало о других ограничениях и их влиянии на скорость.
+Решение достаточно простое.
+В PBD мы разрешали каждое ограничение по очереди. И за счет сдвигов позиций постепенно сходились к некоторому оптимуму в котором каждое ограничение учитывало влияние других ограничений и было разрешено.
+
+Точно так же можно поступить и для скоростей.
+
+{{< image path="images/constraints/sequential_impulses/cube_on_ground_sequential.excalidraw.png" >}}
+
+
+Получается какой-то такой псевдокод
+
+```javascript
+function relax_velocities(velocities, constraints) {
+  for (let i = 0; i < iters; i++) {
+    for (let constraint of constraints) {
+      constraint.apply(velocities);
+    }
+  }
+}
+```
+
+Где iters определяет количество итераций, которые мы будем выполнять для разрешения ограничений.
+
+{{< include_sketch path="constraints/sketch/rigid_body_simulation_sequential_sketch.js" base_name="rigid_body_simulation_sequential_sketch" >}}
+
+
 
 Теперь давайте попробуем реализовать наше любимое ограничение на дистанцию.
 

@@ -1,4 +1,5 @@
-import ui_namespace from "/game_physics_2/js/common/ui.min.js";
+import ui_namespace from "../../js/common/ui.min.js";
+
 
 class KamadaKawaiParameters {
   constructor() {
@@ -276,6 +277,38 @@ class KamadaKawaiSystem {
       );
     }
   }
+
+  // Move the selected vertex toward the mouse position (mouse in screen coords)
+  applyMouseToDragged(mouse_x, mouse_y, vertexIndex) {
+    if (!this.normalizedDisplayed || this.normalizedDisplayed.length === 0) return;
+    // Map mouse (screen) to layout coordinates inverse of normalization:
+    // layout_x = (mouse_x - targetCenterX)/_smoothScale + _smoothCenter.x
+    let targetCenterX = this.P.width / 2;
+    let targetCenterY = this.P.height / 2;
+    // protect against zero scale
+    let scale = this._smoothScale || 1.0;
+    let layoutMouseX = (mouse_x - targetCenterX) / scale + this._smoothCenter.x;
+    let layoutMouseY = (mouse_y - targetCenterY) / scale + this._smoothCenter.y;
+
+    // Move positions[vertexIndex] toward layoutMouse with a strong spring-like update
+    // so the node follows cursor but still respects clamps.
+    let pos = this.positions[vertexIndex];
+    if (!pos) return;
+    // interpolate with a high factor for snappy dragging
+    const lerp = (a, b, t) => a + (b - a) * t;
+    let t = 0.9; // how strongly the node follows the mouse
+    pos.x = lerp(pos.x, layoutMouseX, t);
+    pos.y = lerp(pos.y, layoutMouseY, t);
+
+    // also update displayPositions so visual feedback is immediate
+    if (this.displayPositions && this.displayPositions[vertexIndex]) {
+      this.displayPositions[vertexIndex].x = pos.x;
+      this.displayPositions[vertexIndex].y = pos.y;
+    }
+    // clamp inside canvas
+    pos.x = Math.max(this.P.margin, Math.min(pos.x, this.P.width - this.P.margin));
+    pos.y = Math.max(this.P.margin, Math.min(pos.y, this.P.height - this.P.margin));
+  }
 }
 
 class KamadaKawaiVisualizer {
@@ -352,9 +385,47 @@ class Interface {
       this.system.reset();
     }
 
-    if (!this.system.isLayoutDone) {
-      this.system.kamadaKawaiStep();
+    // mouse logic: get mouse state and coordinates
+    let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
+
+    // manage dragging: detect which vertex (if any) is being dragged
+    if (this._dragged_index === undefined) this._dragged_index = -1;
+    if (is_mouse) {
+      // if we don't have a dragged vertex yet, try to pick one under cursor
+      if (this._dragged_index === -1) {
+        if (this.system.normalizedDisplayed && this.system.normalizedDisplayed.length > 0) {
+          let minDist = Infinity;
+          let minIdx = -1;
+          for (let i = 0; i < this.system.normalizedDisplayed.length; i++) {
+            let dx = this.system.normalizedDisplayed[i].x - mouse_x;
+            let dy = this.system.normalizedDisplayed[i].y - mouse_y;
+            let d2 = dx * dx + dy * dy;
+            if (d2 < minDist) {
+              minDist = d2;
+              minIdx = i;
+            }
+          }
+          if (minIdx >= 0) {
+            // start dragging only if cursor is reasonably close to vertex
+            let radius = this.system.P.vertexRadius || 20;
+            if (minDist <= (radius * radius)) {
+              this._dragged_index = minIdx;
+            }
+          }
+        }
+      }
+    } else {
+      // mouse not pressed -> release dragged vertex
+      this._dragged_index = -1;
     }
+
+    // if (!this.system.isLayoutDone) {
+      // if dragging, apply mouse influence before running a layout step
+      if (this._dragged_index !== -1) {
+        this.system.applyMouseToDragged(mouse_x, mouse_y, this._dragged_index);
+      }
+      this.system.kamadaKawaiStep();
+    // }
     this.visualizer.vizualize(p5, this.system);
   }
 
