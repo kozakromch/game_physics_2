@@ -4,8 +4,8 @@ import p5 from "../../../js/libs/p5.min.js";
 
 {
   let my_interface = new rigid_body_sim.Interface(
-    "rigid_body_simulation_sequential_sketch",
-    true
+    "rigid_body_simulation_simple_sketch",
+    false
   );
   let main_visualizator = main_visualizator_namespace.getMainVisualizator(
     my_interface,

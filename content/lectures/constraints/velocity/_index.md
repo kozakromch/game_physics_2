@@ -248,6 +248,19 @@ $$
 
 Это незнание ограничений друг о друге приводит к множеству проблем. И нужно что-то придумать, чтобы это исправить. Метод Sequential Impulses как раз и решает эту проблему.
 
+
+Такая же проблема появиться, если мы поставим несколько тел друг на друга с учетом гравитации. Мы ожидаем, что скорости на каждом шаге будут обнуляться. Но чтобы это произошло, верхнему телу нужно понять, что оно находится на нижнем, который тоже должен иметь нулевую скорость. 
+
+
+{{< include_sketch path="constraints/sketch/rigid_body_simulation_simple_sketch.js" base_name="rigid_body_simulation_simple_sketch" >}}
+
+
+
+{{< image path="images/constraints/sequential_impulses/cube_on_cube.excalidraw.png" >}}
+
+
+
+
 <p></p>
 <div class="not-prose">
 <div class="container">

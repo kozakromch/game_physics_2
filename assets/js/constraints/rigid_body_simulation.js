@@ -7,9 +7,9 @@ class Parameters {
   constructor() {
     this.width = 800;
     this.height = 600;
-    this.gravity = math.matrix([0, 9.8]); // гравитация
-    this.dt = 1 / 30; // фиксированное время шага
-    this.friction = 1.0; // коэффициент трения
+    this.gravity = math.matrix([0, 10]); // гравитация
+    this.dt = 1 / 60; // фиксированное время шага
+    this.friction = 0.5; // коэффициент трения
     this.restitution = 0.0; // коэффициент упругости (нулевой как требуется)
     this.floor = 400;
     this.width = 800; // ширина окна
@@ -18,6 +18,7 @@ class Parameters {
     this.impulse_iterations = 10; // итерации Sequential Impulses
     this.max_history = 1;
     this.baumgarte = 0.2; // коэффициент Баумгартена
+    this.collisionMargin = 0.0; // отступ для проверки коллизий
   }
 }
 
@@ -123,12 +124,14 @@ class ContactPoint {
 
 // Класс для твердого тела
 class RigidBody {
-  constructor(vertices, mass, x, y, angle = 0) {
-    this.vertices = vertices; // локальные координаты вершин
+  constructor(vertices, mass, x, y, angle = 0, radius = null) {
+    this.vertices = vertices; // локальные координаты вершин (null для кругов)
+    this.radius = radius; // радиус для кругов (null для многоугольников)
+    this.isCircle = radius !== null;
     this.mass = mass;
     this.invMass = mass > 0 ? 1 / mass : 0;
 
-    // Вычисление момента инерции для многоугольника
+    // Вычисление момента инерции
     this.inertia = this.computeInertia();
     this.invInertia = this.inertia > 0 ? 1 / this.inertia : 0;
 
@@ -148,33 +151,42 @@ class RigidBody {
   }
 
   computeInertia() {
-    // Упрощенный расчет момента инерции для многоугольника
-    let area = 0;
-    let inertia = 0;
-    let n = this.vertices.length;
+    if (this.isCircle) {
+      // Момент инерции для круга: I = 0.5 * m * r^2
+      return 0.5 * this.mass * this.radius * this.radius;
+    } else {
+      // Упрощенный расчет момента инерции для многоугольника
+      let area = 0;
+      let inertia = 0;
+      let n = this.vertices.length;
 
-    for (let i = 0; i < n; i++) {
-      let v1 = this.vertices[i];
-      let v2 = this.vertices[(i + 1) % n];
+      for (let i = 0; i < n; i++) {
+        let v1 = this.vertices[i];
+        let v2 = this.vertices[(i + 1) % n];
 
-      let cross = v1.x * v2.y - v2.x * v1.y;
-      area += cross;
+        let cross = v1.x * v2.y - v2.x * v1.y;
+        area += cross;
 
-      let dot11 = v1.x * v1.x + v1.y * v1.y;
-      let dot12 = v1.x * v2.x + v1.y * v2.y;
-      let dot22 = v2.x * v2.x + v2.y * v2.y;
+        let dot11 = v1.x * v1.x + v1.y * v1.y;
+        let dot12 = v1.x * v2.x + v1.y * v2.y;
+        let dot22 = v2.x * v2.x + v2.y * v2.y;
 
-      inertia += cross * (dot11 + dot12 + dot22);
+        inertia += cross * (dot11 + dot12 + dot22);
+      }
+
+      area *= 0.5;
+      inertia = Math.abs(inertia) / 12.0;
+
+      return (this.mass * inertia) / Math.abs(area);
     }
-
-    area *= 0.5;
-    inertia = Math.abs(inertia) / 12.0;
-
-    return (this.mass * inertia) / Math.abs(area);
   }
 
   // Получение мировых координат вершин
   getWorldVertices() {
+    if (this.isCircle) {
+      return null; // Круги не имеют вершин
+    }
+
     let worldVertices = [];
     let cos_a = Math.cos(this.angle);
     let sin_a = Math.sin(this.angle);
@@ -211,6 +223,8 @@ class RigidBody {
       this.velocity,
       math.multiply(this.externalAcceleration, dt)
     );
+    this.externalAcceleration = math.matrix([0, 0]);
+    // this.velocity = math.add(this.velocity, math.multiply(gravity, dt));
 
     // Интегрируем скорости в позиции
     this.position = math.add(this.position, math.multiply(this.velocity, dt));
@@ -245,6 +259,10 @@ function createTriangle(size, mass, x, y, angle = 0) {
   return new RigidBody(vertices, mass, x, y, angle);
 }
 
+function createCircle(radius, mass, x, y) {
+  return new RigidBody(null, mass, x, y, 0, radius);
+}
+
 // Система физики
 class System {
   constructor() {
@@ -273,30 +291,27 @@ class System {
     // this.bodies[2].velocity = math.matrix([10, -5]);
     // this.bodies[3].velocity = math.matrix([-25, 5]);
 
-    // создаем пирамидку из кубиков. Внизу самый большой и выше меньше
-    let offset_x = this.P.width / 2;
-    let offset_y = this.P.height * 0.9;
-    for (let i = 0; i < 10; i++) {
-      let width = 80 - i * 8;
-      let height = 20 - i;
-      offset_y -= (height + 5);
-      this.bodies.push(
-        createRectangle(
-          width,
-          height,
-          1,
-          offset_x,
-          offset_y,
-          0
-        )
-      );
-      this.bodies[i].velocity = math.matrix([0, 0]);
-    }
+    // создаем пирамидку из кубиков.
+    // let offset_x = this.P.width / 2;
+    // let offset_y = this.P.floor - 20;
+    // for (let i = 0; i < 10; i++) {
+    //   let width = 50 + i * 18;
+    //   let height = 15 + i;
+    //   this.bodies.push(
+    //     createRectangle(width, height, 1 + i, offset_x, offset_y, 0)
+    //   );
+    //   this.bodies[i].velocity = math.matrix([0, 0]);
+    //   offset_y -= height + 5; // Move upwards for the next block
+    // }
 
-    // Устанавливаем гравитацию для всех тел
-    for (let body of this.bodies) {
-      body.externalAcceleration = this.P.gravity;
-    }
+    // Два тяжелых тела друг над другом и несколько кругов
+    this.bodies.push(createRectangle(40, 40, 0.1, 200, 100, 0));
+    this.bodies.push(createRectangle(80, 80, 5, 200, 30, 0));
+
+    // Добавляем круги
+    // this.bodies.push(createCircle(20, 50, 100, 50));
+    // this.bodies.push(createCircle(15, 0.8, 300, 80));
+    // this.bodies.push(createCircle(25, 1.5, 500, 60));
   }
 
   calcSystem() {
@@ -311,7 +326,7 @@ class System {
       if (body.invMass > 0) {
         body.velocity = math.add(
           body.velocity,
-          math.multiply(body.externalAcceleration, dt)
+          math.multiply(this.P.gravity, dt)
         );
       }
     }
@@ -350,29 +365,58 @@ class System {
   }
 
   checkBodyCollision(bodyA, bodyB) {
-    let verticesA = bodyA.getWorldVertices();
-    let verticesB = bodyB.getWorldVertices();
+    if (bodyA.isCircle && bodyB.isCircle) {
+      this.checkCircleCircleCollision(bodyA, bodyB);
+    } else if (bodyA.isCircle && !bodyB.isCircle) {
+      this.checkCirclePolygonCollision(bodyA, bodyB);
+    } else if (!bodyA.isCircle && bodyB.isCircle) {
+      this.checkCirclePolygonCollision(bodyB, bodyA);
+    } else {
+      // Polygon-polygon collision (existing code)
+      let verticesA = bodyA.getWorldVertices();
+      let verticesB = bodyB.getWorldVertices();
 
-    // Проверяем вершины A против ребер B
-    this.checkVerticesAgainstPolygon(bodyA, bodyB, verticesA, verticesB);
-    // Проверяем вершины B против ребер A
-    this.checkVerticesAgainstPolygon(bodyB, bodyA, verticesB, verticesA);
+      // Проверяем вершины A против ребер B
+      this.checkVerticesAgainstPolygon(bodyA, bodyB, verticesA, verticesB);
+      // Проверяем вершины B против ребер A
+      this.checkVerticesAgainstPolygon(bodyB, bodyA, verticesB, verticesA);
+    }
   }
 
   checkVerticesAgainstPolygon(bodyA, bodyB, verticesA, verticesB) {
+    let margin = this.P.collisionMargin;
+
     for (let vertex of verticesA) {
       if (this.pointInPolygon(vertex, verticesB)) {
         // Находим ближайшее ребро
         let closestEdge = this.findClosestEdge(vertex, verticesB);
         if (closestEdge) {
+          // Учитываем collision margin в глубине проникновения
+          let adjustedPenetration = closestEdge.distance + margin;
           let contact = new ContactPoint(
             math.matrix([vertex.x, vertex.y]),
             math.multiply(closestEdge.normal, -1),
             bodyA,
             bodyB,
-            closestEdge.distance
+            adjustedPenetration
           );
           this.contacts.push(contact);
+        }
+      } else {
+        // Проверяем, находится ли точка в пределах collision margin от поверхности
+        let closestEdge = this.findClosestEdge(vertex, verticesB);
+        if (closestEdge && closestEdge.distance < margin) {
+          let adjustedPenetration = margin - closestEdge.distance;
+          if (adjustedPenetration > 0) {
+            let contact = new ContactPoint(
+              math.matrix([vertex.x, vertex.y]),
+              closestEdge.normal,
+              bodyA,
+              bodyB,
+              adjustedPenetration
+            );
+            this.contacts.push(contact);
+          }
         }
       }
     }
@@ -404,13 +448,135 @@ class System {
     // Проверяем все тела от последнего к первому (сверху вниз)
     for (let i = this.bodies.length - 1; i >= 0; i--) {
       let body = this.bodies[i];
-      let vertices = body.getWorldVertices();
 
-      if (this.pointInPolygon(point, vertices)) {
-        return body;
+      if (body.isCircle) {
+        // Проверка для круга
+        let dx = point.x - getX(body.position);
+        let dy = point.y - getY(body.position);
+        let distSq = dx * dx + dy * dy;
+        if (distSq <= body.radius * body.radius) {
+          return body;
+        }
+      } else {
+        // Проверка для многоугольника
+        let vertices = body.getWorldVertices();
+        if (this.pointInPolygon(point, vertices)) {
+          return body;
+        }
       }
     }
     return null;
+  }
+
+  checkCircleCircleCollision(circleA, circleB) {
+    let dx = getX(circleB.position) - getX(circleA.position);
+    let dy = getY(circleB.position) - getY(circleA.position);
+    let distance = Math.sqrt(dx * dx + dy * dy);
+    let radiusSum = circleA.radius + circleB.radius;
+
+    if (distance < radiusSum) {
+      let penetration = radiusSum - distance;
+      let normal;
+
+      if (distance > 0.001) {
+        normal = math.matrix([-dx / distance, -dy / distance]);
+      } else {
+        // Если круги точно совпадают, используем произвольную нормаль
+        normal = math.matrix([1, 0]);
+      }
+
+      // Точка контакта находится между центрами кругов
+      let contactPoint = math.add(
+        circleA.position,
+        math.multiply(normal, circleA.radius)
+      );
+
+      let contact = new ContactPoint(
+        contactPoint,
+        normal,
+        circleA,
+        circleB,
+        penetration
+      );
+      this.contacts.push(contact);
+    }
+  }
+
+  checkCirclePolygonCollision(circle, polygon) {
+    let vertices = polygon.getWorldVertices();
+    let circleCenter = { x: getX(circle.position), y: getY(circle.position) };
+
+    // Находим ближайшую точку на многоугольнике к центру круга
+    let closestPoint = this.findClosestPointOnPolygon(circleCenter, vertices);
+
+    let dx = circleCenter.x - closestPoint.x;
+    let dy = circleCenter.y - closestPoint.y;
+    let distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (distance < circle.radius) {
+      let penetration = circle.radius - distance;
+      let normal;
+
+      if (distance > 0.001) {
+        normal = math.matrix([dx / distance, dy / distance]);
+      } else {
+        // Если центр круга точно на границе, используем нормаль полигона
+        let edge = this.findClosestEdge(circleCenter, vertices);
+        normal = edge ? edge.normal : math.matrix([0, -1]);
+      }
+
+      let contactPoint = math.matrix([closestPoint.x, closestPoint.y]);
+
+      let contact = new ContactPoint(
+        contactPoint,
+        normal,
+        circle,
+        polygon,
+        penetration
+      );
+      this.contacts.push(contact);
+    }
+  }
+
+  findClosestPointOnPolygon(point, vertices) {
+    let closestPoint = null;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < vertices.length; i++) {
+      let v1 = vertices[i];
+      let v2 = vertices[(i + 1) % vertices.length];
+
+      let edgePoint = this.closestPointOnLineSegment(point, v1, v2);
+      let dx = point.x - edgePoint.x;
+      let dy = point.y - edgePoint.y;
+      let distance = dx * dx + dy * dy;
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestPoint = edgePoint;
+      }
+    }
+
+    return closestPoint;
+  }
+
+  closestPointOnLineSegment(point, lineStart, lineEnd) {
+    let dx = lineEnd.x - lineStart.x;
+    let dy = lineEnd.y - lineStart.y;
+    let lengthSq = dx * dx + dy * dy;
+
+    if (lengthSq === 0) {
+      return lineStart; // Отрезок является точкой
+    }
+
+    let t =
+      ((point.x - lineStart.x) * dx + (point.y - lineStart.y) * dy) / lengthSq;
+    t = Math.max(0, Math.min(1, t)); // Ограничиваем t отрезком [0, 1]
+
+    return {
+      x: lineStart.x + t * dx,
+      y: lineStart.y + t * dy,
+    };
   }
 
   findClosestEdge(point, vertices) {
@@ -452,56 +618,122 @@ class System {
   }
 
   checkWallCollisions(body) {
-    let vertices = body.getWorldVertices();
+    if (body.isCircle) {
+      this.checkCircleWallCollisions(body);
+    } else {
+      let vertices = body.getWorldVertices();
 
-    for (let vertex of vertices) {
-      // Пол
-      if (vertex.y > this.P.floor) {
-        let contact = new ContactPoint(
-          math.matrix([vertex.x, this.P.floor]),
-          math.matrix([0, -1]),
-          body,
-          null,
-          vertex.y - this.P.floor
-        );
-        this.contacts.push(contact);
-      }
+      for (let vertex of vertices) {
+        // Пол
+        if (vertex.y > this.P.floor) {
+          let penetration = vertex.y - this.P.floor;
+          let contact = new ContactPoint(
+            math.matrix([vertex.x, this.P.floor]),
+            math.matrix([0, -1]),
+            body,
+            null,
+            penetration
+          );
+          this.contacts.push(contact);
+        }
 
-      // Левая стенка
-      if (vertex.x < 0) {
-        let contact = new ContactPoint(
-          math.matrix([0, vertex.y]),
-          math.matrix([1, 0]),
-          body,
-          null,
-          -vertex.x
-        );
-        this.contacts.push(contact);
-      }
+        // Левая стенка
+        if (vertex.x < 0) {
+          let penetration = 0 - vertex.x;
+          let contact = new ContactPoint(
+            math.matrix([0, vertex.y]),
+            math.matrix([1, 0]),
+            body,
+            null,
+            penetration
+          );
+          this.contacts.push(contact);
+        }
 
-      // Правая стенка
-      if (vertex.x > this.P.width) {
-        let contact = new ContactPoint(
-          math.matrix([this.P.width, vertex.y]),
-          math.matrix([-1, 0]),
-          body,
-          null,
-          vertex.x - this.P.width
-        );
-        this.contacts.push(contact);
-      }
+        // Правая стенка
+        if (vertex.x > this.P.width) {
+          let penetration = vertex.x - this.P.width;
+          let contact = new ContactPoint(
+            math.matrix([this.P.width, vertex.y]),
+            math.matrix([-1, 0]),
+            body,
+            null,
+            penetration
+          );
+          this.contacts.push(contact);
+        }
 
-      // Потолок
-      if (vertex.y < 0) {
-        let contact = new ContactPoint(
-          math.matrix([vertex.x, 0]),
-          math.matrix([0, 1]),
-          body,
-          null,
-          -vertex.y
-        );
-        this.contacts.push(contact);
+        // Потолок
+        if (vertex.y < 0) {
+          let penetration = 0 - vertex.y;
+          let contact = new ContactPoint(
+            math.matrix([vertex.x, 0]),
+            math.matrix([0, 1]),
+            body,
+            null,
+            penetration - vertex.y
+          );
+          this.contacts.push(contact);
+        }
       }
+    }
+  }
+
+  checkCircleWallCollisions(circle) {
+    let x = getX(circle.position);
+    let y = getY(circle.position);
+    let r = circle.radius;
+
+    // Пол
+    if (y + r > this.P.floor) {
+      let penetration = y + r - this.P.floor;
+      let contact = new ContactPoint(
+        math.matrix([x, this.P.floor]),
+        math.matrix([0, -1]),
+        circle,
+        null,
+        penetration
+      );
+      this.contacts.push(contact);
+    }
+
+    // Левая стенка
+    if (x - r < 0) {
+      let penetration = r - x;
+      let contact = new ContactPoint(
+        math.matrix([0, y]),
+        math.matrix([1, 0]),
+        circle,
+        null,
+        penetration
+      );
+      this.contacts.push(contact);
+    }
+
+    // Правая стенка
+    if (x + r > this.P.width) {
+      let penetration = x + r - this.P.width;
+      let contact = new ContactPoint(
+        math.matrix([this.P.width, y]),
+        math.matrix([-1, 0]),
+        circle,
+        null,
+        penetration
+      );
+      this.contacts.push(contact);
+    }
+
+    // Потолок
+    if (y - r < 0) {
+      let penetration = r - y;
+      let contact = new ContactPoint(
+        math.matrix([x, 0]),
+        math.matrix([0, 1]),
+        circle,
+        null,
+        penetration
+      );
+      this.contacts.push(contact);
     }
   }
 
@@ -541,19 +773,20 @@ class System {
         )
       );
 
-      if (magnitude(tangent) > 0.00001) {
-        let relativeTangentVelocity = dot2D(contact.relativeVelocity, tangent);
+      if (magnitude(tangent) > 0.01) {
+        let relativeTangentVelocity = dot2D(relativeVelocity, tangent);
         let tangentImpulseAmount =
           -relativeTangentVelocity * contact.effectiveMass;
 
         // Ограничиваем трение законом Кулона
         let maxFriction = this.P.friction * contact.normalImpulse;
-        tangentImpulseAmount =
-          Math.max(
-            -maxFriction,
-            Math.min(maxFriction, contact.tangentImpulse + tangentImpulseAmount)
-          ) - contact.tangentImpulse;
-        contact.tangentImpulse += tangentImpulseAmount;
+        // clamp (-maxFriction, maxFriction)
+        let newTangentImpulse = Math.max(
+          -maxFriction,
+          Math.min(maxFriction, contact.tangentImpulse + tangentImpulseAmount)
+        );
+        tangentImpulseAmount = newTangentImpulse - contact.tangentImpulse;
+        contact.tangentImpulse = newTangentImpulse;
 
         let frictionImpulse = math.multiply(tangent, tangentImpulseAmount);
         contact.bodyA.applyImpulse(frictionImpulse, contact.point);
@@ -600,36 +833,34 @@ class Visualizer {
     this.drawHistory(p5, body.history, color, 20);
 
     // Рисуем тело
-    let vertices = body.getWorldVertices();
-
     p5.stroke(0);
     p5.strokeWeight(2);
     p5.fill(color);
 
-    p5.beginShape();
-    for (let vertex of vertices) {
-      p5.vertex(vertex.x, vertex.y);
+    if (body.isCircle) {
+      // Рисуем круг
+      p5.circle(getX(body.position), getY(body.position), body.radius * 2);
+
+      // Рисуем линию для показа ориентации
+      let endX = getX(body.position) + Math.cos(body.angle) * body.radius * 0.8;
+      let endY = getY(body.position) + Math.sin(body.angle) * body.radius * 0.8;
+      p5.stroke(0);
+      p5.strokeWeight(2);
+      p5.line(getX(body.position), getY(body.position), endX, endY);
+    } else {
+      // Рисуем многоугольник
+      let vertices = body.getWorldVertices();
+      p5.beginShape();
+      for (let vertex of vertices) {
+        p5.vertex(vertex.x, vertex.y);
+      }
+      p5.endShape(p5.CLOSE);
     }
-    p5.endShape(p5.CLOSE);
 
     // Рисуем центр масс
     p5.fill(0);
     p5.noStroke();
     p5.circle(getX(body.position), getY(body.position), 4);
-
-    // Рисуем направление (стрелка)
-    let cos_a = Math.cos(body.angle);
-    let sin_a = Math.sin(body.angle);
-    let arrowLength = 20;
-
-    p5.stroke(0);
-    p5.strokeWeight(2);
-    p5.line(
-      getX(body.position),
-      getY(body.position),
-      getX(body.position) + cos_a * arrowLength,
-      getY(body.position) + sin_a * arrowLength
-    );
   }
 
   drawContacts(p5, contacts) {
@@ -643,7 +874,8 @@ class Visualizer {
       // Рисуем нормаль
       let normalEnd = math.add(
         contact.point,
-        math.multiply(contact.normal, contact.normalImpulse)
+        // math.multiply(contact.normal, 20)
+        math.multiply(contact.normal, contact.normalImpulse * 50)
       );
       p5.line(
         getX(contact.point),
@@ -687,10 +919,11 @@ class Visualizer {
 
 // Интерфейс
 rigid_body_sim.Interface = class {
-  constructor(base_name) {
+  constructor(base_name, with_slider) {
     this.system = new System();
     this.visualizer = new Visualizer();
     this.base_name = base_name;
+    this.with_slider = with_slider;
 
     // Переменные для отслеживания перетаскивания
     this.selectedBody = null;
@@ -741,12 +974,24 @@ rigid_body_sim.Interface = class {
       newX = Math.max(margin, Math.min(p5.width - margin, newX));
       newY = Math.max(margin, Math.min(p5.height - margin, newY));
 
-      // Устанавливаем новую позицию
-      this.selectedBody.position = math.matrix([newX, newY]);
+      // Реализуем PID-контроллер для плавного перетаскивания
+      let kp = 10; // Пропорциональный коэффициент
+      let kd = 5; // Дифференциальный коэффициент
 
-      // Обнуляем скорости, чтобы объект не дергался
-      this.selectedBody.velocity = math.matrix([0, 0]);
-      this.selectedBody.angularVelocity = 0;
+      let positionError = math.matrix([
+        newX - getX(this.selectedBody.position),
+        newY - getY(this.selectedBody.position),
+      ]);
+
+      let velocityError = math.multiply(
+        math.subtract(math.matrix([0, 0]), this.selectedBody.velocity),
+        kd
+      );
+
+      let pidForce = math.add(math.multiply(positionError, kp), velocityError);
+
+      // Устанавливаем внешнее ускорение на основе PID-контроллера
+      this.selectedBody.externalAcceleration = pidForce;
     }
 
     // Завершение перетаскивания
@@ -765,47 +1010,60 @@ rigid_body_sim.Interface = class {
     p5.stroke(255, 255, 0); // желтая подсветка
     p5.strokeWeight(3);
 
-    let vertices = body.getWorldVertices();
-    p5.beginShape();
-    for (let vertex of vertices) {
-      p5.vertex(vertex.x, vertex.y);
+    if (body.isCircle) {
+      // Подсветка для круга
+      p5.circle(
+        getX(body.position),
+        getY(body.position),
+        (body.radius + 5) * 2
+      );
+    } else {
+      // Подсветка для многоугольника
+      let vertices = body.getWorldVertices();
+      p5.beginShape();
+      for (let vertex of vertices) {
+        p5.vertex(vertex.x, vertex.y);
+      }
+      p5.endShape(p5.CLOSE);
     }
-    p5.endShape(p5.CLOSE);
     p5.pop();
   }
 
-  setup(p5, base_name) {
+  setup(p5) {
     this.system.P.width = p5.width;
     this.system.P.height = p5.height;
     this.system.P.floor = p5.height - 50;
     //set fps
     p5.frameRate(60);
-
-    // Add slider for impulse_iterations
-    let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
-      this.base_name,
-      "1",
-      "Impulse Iterations"
-    );
-    this.sliderImpulseIterations = ui_namespace.createSlider(
-      div_m_1,
-      1,
-      20,
-      19,
-      this.system.P.impulse_iterations
-    );
-    this.outputImpulseIterations = ui_namespace.createOutput(div_m_2);
-    this.outputImpulseIterations.innerHTML = this.sliderImpulseIterations.value;
-
-    this.sliderImpulseIterations.oninput = function () {
+    if (this.with_slider) {
+      // Add slider for impulse_iterations
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "1",
+        "Impulse Iterations"
+      );
+      this.sliderImpulseIterations = ui_namespace.createSlider(
+        div_m_1,
+        1,
+        20,
+        19,
+        this.system.P.impulse_iterations
+      );
+      this.outputImpulseIterations = ui_namespace.createOutput(div_m_2);
       this.outputImpulseIterations.innerHTML =
         this.sliderImpulseIterations.value;
-      this.system.P.impulse_iterations = parseInt(
-        this.sliderImpulseIterations.value,
-        10
-      );
-    }.bind(this);
 
+      this.sliderImpulseIterations.oninput = function () {
+        this.outputImpulseIterations.innerHTML =
+          this.sliderImpulseIterations.value;
+        this.system.P.impulse_iterations = parseInt(
+          this.sliderImpulseIterations.value,
+          10
+        );
+      }.bind(this);
+    } else {
+      this.system.P.impulse_iterations = 1;
+    }
     // Пересоздаем систему с новыми размерами
     this.system.initializeSystem();
   }
