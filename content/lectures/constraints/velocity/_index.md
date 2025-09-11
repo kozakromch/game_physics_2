@@ -6,7 +6,7 @@ weight: 3
 math: true
 toc: true
 sidebar:
-  open: true
+  open: false
 ---
 
 ## Интро

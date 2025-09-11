@@ -2,7 +2,7 @@
 title: 1. Метод Hitman Codename 47
 author: Роман Козак
 type: docs
-weight: 2
+weight: 1
 math: true
 toc: true
 sidebar:

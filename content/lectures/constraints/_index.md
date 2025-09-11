@@ -82,10 +82,10 @@ $$
   {{< card link="penalty" title="Penalty method" image="images/constraints/penalty_method/main.excalidraw.png" icon="book-open" >}}
   </div>
   <div class="col" style="margin-top: 3%;">
-  {{< card link="hitman" title="Hitman" image="images/constraints/hitman/main.excalidraw.png" icon="book-open" >}}
+  {{< card link="position" title="Position methods" image="images/constraints/hitman/main.excalidraw.png" icon="book-open" >}}
   </div>
   <div class="col" style="margin-top: 3%;">
-  {{< card link="soft_constraints" title="Soft constraints" image="images/constraints/soft_constraints/main.excalidraw.png" icon="book-open" >}}
+  {{< card link="velocity" title="Velocity methods" image="images/constraints/soft_constraints/main.excalidraw.png" icon="book-open" >}}
   </div>
 </div>
 </div>
