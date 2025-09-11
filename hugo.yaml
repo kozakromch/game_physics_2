@@ -36,7 +36,7 @@ menu:
         type: search
     - name: GitHub
       weight: 6
-      url: "https://github.com/kozakromch/hextra-starter-template"
+      url: "https://https://github.com/kozakromch/game_physics_2"
       params:
         icon: github
 
