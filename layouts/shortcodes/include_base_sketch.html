@@ -1,0 +1,20 @@
+{{ $base_name := .Get "base_name" }}
+{{ $rel_sketch_path := .Get "path" }}
+{{ $abs_sketch_path:=printf "%s%s" "js/" $rel_sketch_path}}
+{{ $js := resources.Get $abs_sketch_path | resources.Minify }}
+
+<p></p>
+<div class="hx-mx-auto" style="max-width: 500px; touch-action: none" id={{ (printf "%s%s" $base_name "_base_id" ) }}>
+    <div class="hx-overflow-hidden hx-border hx-border-gray-200 hx-rounded-lg  dark:hx-border-neutral-700">
+        <button type="button" class="hx-mr-2 hx-rounded-t hx-p-1 hx-font-medium" id={{ (printf "%s%s"
+            $base_name "_stop_button_id" ) }}>Start</button>
+        <button type="button" class="hx-mr-2 hx-rounded-t hx-p-1 hx-font-medium" id={{ (printf "%s%s"
+            $base_name "_reset_button_id" ) }}>Reset</button>
+
+            <div class="container" id ={{printf "%s%s" $base_name "_main" }}></div>
+                    
+
+            <script defer src="{{ $js.RelPermalink }}" type="module"></script>
+    </div>
+</div>
+<p></p>
