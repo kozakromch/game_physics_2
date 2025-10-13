@@ -6,7 +6,7 @@ function createSketch(baseName, root) {
     `
     <style> 
     .matrix-input { font-size: 0.75rem; padding: 0.25rem; width: 3.125rem; height: 1.875rem; } 
-    .vector-input { font-size: 0.75rem; padding: 0.25rem; width: 3.125rem; height: 1.875rem; } 
+    .vector-input { font-size: 0.75rem; padding: 0.25rem; width: 4.525rem; height: 1.875rem; } 
     </style>
     <div class="d-flex justify-content-around">
       <div>
