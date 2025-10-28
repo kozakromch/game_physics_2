@@ -8,7 +8,6 @@ next:
 toc: true
 math: true
 ---
-{{< add_script "js/fluids/stable_fluids.js" >}}
 {{< add_script "js/fluids/velocity_field.js" >}}
 
 {{< image path="images/fluids/frog.excalidraw.png" >}}

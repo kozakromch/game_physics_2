@@ -7,6 +7,8 @@ toc: true
 sidebar:
   open: true
 ---
+{{< add_script "js/fluids/stable_fluids.js" >}}
+
 
 {{< include_sketch path="fluids/sketch/stable_fluids_sketch.js" base_name="stable_fluids_sketch" >}}
 

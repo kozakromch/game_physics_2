@@ -1,4 +1,4 @@
-import ui_namespace from "../../js/common/ui.min.js";
+import ui_namespace from "../../../js/common/ui.min.js";
 
 
 class KamadaKawaiParameters {
