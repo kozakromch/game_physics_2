@@ -18,7 +18,7 @@ class parameters {
     this.g = 10; // gravitational acceleration
     this.maxNeighbors = 200; // maximum number of neighbors per particle
     this.mouseRadius = 40.0; // radius of mouse interaction circle
-    this.mouseForce = 100.0; // strength of mouse interaction force
+    this.mouseForce = 1000.0; // strength of mouse interaction force
     this.floor = 10.0; // floor position
   }
 }
@@ -385,8 +385,6 @@ class System {
           const force = mouseForce * (1.0 - dist / mouseRadius);
           const fx = -(dx / dist) * force;
           const fy = -(dy / dist) * force;
-          //   ps_x[i] += v_mouse_x;
-          //   ps_y[i] += v_mouse_y;
           // Add velocity impulse
           vs_x[i] += fx * this.P.timeStepSize;
           vs_y[i] += fy * this.P.timeStepSize;
@@ -411,6 +409,8 @@ class System {
       if (dist2 < mouseRadius2) {
         ps_x[i] += v_mouse_x;
         ps_y[i] += v_mouse_y;
+        this.vs_x[i] += v_mouse_x;
+        this.vs_y[i] += v_mouse_y;
       }
     }
   }
