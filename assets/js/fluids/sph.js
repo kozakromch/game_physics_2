@@ -198,7 +198,7 @@ SPH.Interface = class {
     this.system.P.width = p5.width;
     this.system.P.height = p5.height;
     this.system.P.n_x = Math.floor(p5.width * 0.4);
-    this.system.P.n_y = Math.floor(p5.height * 0.4);
+    this.system.P.n_y = Math.floor(p5.height * 0.3);
 
     {
       let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
@@ -226,7 +226,6 @@ SPH.Interface = class {
     this.slider2.oninput = function () {
       this.output2.innerHTML = this.slider2.value;
     }.bind(this);
-    this.slider2.value = this.system.P.N;
     this.n_points = this.system.P.N;
     this.system.init();
   }

@@ -6,8 +6,6 @@ math: true
 toc: true
 sidebar:
   open: true
-params:
-  published: false
 ---
 {{< add_script "js/fluids/sph.js" >}}
 
@@ -123,10 +121,39 @@ $$
 {{< include_sketch path="fluids/sketch/sph_pressure_sketch.js" base_name="sph_pressure_sketch" >}}
 
 
+Здесь я для каждой ячейки сетки вычисляю плотность; чем выше плотность, тем ярче цвет. Kernel function -- кубический сплайн.
+Зная плотность, мы можем вычислить давление. А зная давление, можно вычислить силы. В итоге можно симулировать движение жидкости.
+
+Получаем псевдокод алгоритма SPH:
+
+
+```javascript
+function SPH_Simulation(particles) {
+  for (let i = 0; i < particles.length; i++) {
+        // Вычисляем плотность в частице i
+        rho_i = calculateDensity(i, particles)
+  }
+  for (let i = 0; i < particles.length; i++) {
+        // Вычисляем давление в частице i
+        P_i = calculatePressure(rho_i)
+
+        // Вычисляем силы на частицу i
+        F_i = calculateForces(i, particles, P_i, rho_i)
+  }
+  for (let i = 0; i < particles.length; i++) {
+        // Обновляем положение и скорость частицы i
+        updateParticle(i, F_i)
+  }
+}
+```
+
+
+В основном дальше каждая статья по SPH отличается определением функций для вычисления давления и сил и их использование
+
 
 ## Источники
 
 [Survey](https://sph-tutorial.physics-simulation.org/pdf/SPH_Tutorial.pdf)
 [Первая статья](https://academic.oup.com/mnras/article/181/3/375/988212?login=false)
-[Weakly compressible SPH for free surface flows](https://cg.informatik.uni-freiburg.de/publications/2007_SCA_SPH.pdf)
+
 
