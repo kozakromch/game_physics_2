@@ -1,21 +1,25 @@
-// Weakly compressible SPH (WCSPH)
+import ui_namespace from "../../js/common/ui.min.js";
+import color_scheme from "../../js/common/color_scheme.min.js";
 
 class parameters {
   constructor() {
-    this.numFluidParticles = 2000; // number of particles
+    this.numFluidParticles = 3000; // number of particles
     this.width = 400;
     this.height = 400;
-    this.particleRadius = 3.0;
+    this.particleRadius = 3;
     this.supportRadius = 3.0 * this.particleRadius;
     this.density0 = 1000.0; // rest density
-    this.viscosity = 0.01;
+    this.viscosity = 1.0;
     this.diam = 2.0 * this.particleRadius;
     this.mass = this.diam * this.diam * this.density0;
-    this.timeStepSize = 0.002;
+    this.timeStepSize = 0.01;
     this.stiffness = 30000;
     this.exponent = 7;
     this.g = 10; // gravitational acceleration
-    this.maxNeighbors = 1000; // maximum number of neighbors per particle
+    this.maxNeighbors = 200; // maximum number of neighbors per particle
+    this.mouseRadius = 40.0; // radius of mouse interaction circle
+    this.mouseForce = 100.0; // strength of mouse interaction force
+    this.floor = 10.0; // floor position
   }
 }
 
@@ -70,7 +74,7 @@ class HashVector {
     }
   }
 
-  query(ps_x, ps_y, maxDist, neighbors) {
+  query(ps_x, ps_y, i, maxDist, neighbors, all_ps_x, all_ps_y) {
     let x0 = this.intCoord(ps_x - maxDist);
     let y0 = this.intCoord(ps_y - maxDist);
 
@@ -78,6 +82,7 @@ class HashVector {
     let y1 = this.intCoord(ps_y + maxDist);
 
     let querySize = 0;
+    const maxDist2 = maxDist * maxDist;
 
     for (let xi = x0; xi <= x1; xi++) {
       for (let yi = y0; yi <= y1; yi++) {
@@ -85,13 +90,26 @@ class HashVector {
         let start = this.cellStart[h];
         let end = this.cellStart[h + 1];
 
-        for (let i = start; i < end; i++) {
-          neighbors.ids[querySize] = this.cellEntries[i];
-          querySize++;
-        }
-        if (querySize >= this.maxNeighbors) {
-          neighbors.size = querySize;
-          return;
+        for (let k = start; k < end; k++) {
+          const j = this.cellEntries[k];
+          if (i === j) continue;
+
+          const dx = ps_x - all_ps_x[j];
+          const dy = ps_y - all_ps_y[j];
+          const dist2 = dx * dx + dy * dy;
+
+          if (dist2 < maxDist2) {
+            if (querySize < this.maxNeighbors) {
+              neighbors.ids[querySize] = j;
+              neighbors.dist[querySize] = Math.sqrt(dist2);
+              neighbors.dx[querySize] = dx;
+              neighbors.dy[querySize] = dy;
+              querySize++;
+            } else {
+              neighbors.size = querySize;
+              return;
+            }
+          }
         }
       }
     }
@@ -128,33 +146,35 @@ class System {
   }
 
   // Gradient of cubic spline kernel 2D
-  cubicKernel2D_Gradient(rx, ry) {
-    let res = [0, 0];
-    let rl = norm(rx, ry);
-    let q = rl / this.P.supportRadius;
-    if (q <= 1.0) {
-      if (rl > 1.0e-6) {
-        let gradq_x = rx * (1.0 / (rl * this.P.supportRadius));
-        let gradq_y = ry * (1.0 / (rl * this.P.supportRadius));
-        if (q <= 0.5) {
-          res[0] = this.kernel_l * q * (3.0 * q - 2.0) * gradq_x;
-          res[1] = this.kernel_l * q * (3.0 * q - 2.0) * gradq_y;
-        } else {
-          let factor = (1.0 - q) * (1.0 - q);
-          res[0] = this.kernel_l * -factor * gradq_x;
-          res[1] = this.kernel_l * -factor * gradq_y;
-        }
-      }
+  cubicKernel2D_Gradient(dx, dy, r) {
+    if (r <= 1.0e-6) {
+      return [0, 0];
     }
-    return res;
+
+    const q = r / this.P.supportRadius;
+    if (q > 1.0) {
+      return [0, 0];
+    }
+
+    const invRL = 1.0 / (r * this.P.supportRadius);
+    const gradq_x = dx * invRL;
+    const gradq_y = dy * invRL;
+
+    let factor;
+    if (q <= 0.5) {
+      factor = this.kernel_l * q * (3.0 * q - 2.0);
+    } else {
+      factor = -this.kernel_l * (1.0 - q) * (1.0 - q);
+    }
+    return [factor * gradq_x, factor * gradq_y];
   }
 
   // simulation step
-  simulationStep() {
-    // neighborhood search
-    this.neighborhoodSearch();
+  simulationStep(is_mouse, mouse_x, mouse_y, v_mouse_x, v_mouse_y) {
+    for (let i = 0; i < 5; i++) {
+      // neighborhood search
+      this.neighborhoodSearch();
 
-    for (let iter = 0; iter < 8; iter++) {
       // reset the accelerations of the particles
       this.resetAccelerations();
 
@@ -166,21 +186,30 @@ class System {
 
       // compute accelerations caused by pressure forces
       this.computePressureAccelerations();
-
+      if (is_mouse) {
+        this.applyMouseForce(mouse_x, mouse_y, v_mouse_x, v_mouse_y);
+      }
       // compute non-pressure forces
       this.computeViscosity();
-
       // time integration
       this.symplecticEuler();
+    }
+    // apply mouse interaction
+    if (is_mouse) {
+      this.applyMouseVelocity(mouse_x, mouse_y, v_mouse_x, v_mouse_y);
     }
   }
 
   // set all accelerations to (0, gravity)
   resetAccelerations() {
-    let i;
-    for (i = 0; i < this.P.numFluidParticles; i++) {
-      this.accs_x[i] = 0.0;
-      this.accs_y[i] = this.P.g;
+    const numFluid = this.P.numFluidParticles;
+    const g = this.P.g;
+    const accs_x = this.accs_x;
+    const accs_y = this.accs_y;
+
+    for (let i = 0; i < numFluid; i++) {
+      accs_x[i] = 0.0;
+      accs_y[i] = g;
     }
   }
 
@@ -188,38 +217,47 @@ class System {
   neighborhoodSearch() {
     this.hashVector.init(this.ps_x, this.ps_y);
 
-    for (let i = 0; i < this.P.numFluidParticles; i++) {
+    for (let i = 0; i < this.totalParticles; i++) {
       this.hashVector.query(
         this.ps_x[i],
         this.ps_y[i],
+        i,
         this.P.supportRadius,
-        this.neighbors[i]
+        this.neighbors[i],
+        this.ps_x,
+        this.ps_y
       );
     }
   }
 
   // compute the density of all particles using the SPH formulation
   computeDensity() {
-    for (let i = 0; i < this.P.numFluidParticles; i++) {
+    const numFluid = this.P.numFluidParticles;
+    const mass = this.P.mass;
+    const kernel_0 = this.kernel_0;
+    const densities = this.densities;
+    const psi = this.psi;
+
+    for (let i = 0; i < numFluid; i++) {
       // consider particle i
-      this.densities[i] = this.P.mass * this.kernel_0;
+      densities[i] = mass * kernel_0;
 
-      let nl = this.neighbors[i].size;
+      const neighborList = this.neighbors[i];
+      const nl = neighborList.size;
+      const ids = neighborList.ids;
+      const dists = neighborList.dist;
+
       for (let j = 0; j < nl; j++) {
-        let nj = this.neighbors[i].ids[j];
-        if (i === nj) continue;
-
-        let dx = this.ps_x[i] - this.ps_x[nj];
-        let dy = this.ps_y[i] - this.ps_y[nj];
+        const nj = ids[j];
         // compute W (xi-xj)
-        let Wij = this.cubicKernel2D(norm(dx, dy));
+        const Wij = this.cubicKernel2D(dists[j]);
 
         // Fluid
-        if (nj < this.P.numFluidParticles) {
-          this.densities[i] += this.P.mass * Wij;
+        if (nj < numFluid) {
+          densities[i] += mass * Wij;
         } else {
           // Boundary
-          this.densities[i] += this.psi[nj] * Wij;
+          densities[i] += psi[nj] * Wij;
         }
       }
     }
@@ -227,39 +265,60 @@ class System {
 
   // compute the pressure values using Tait's equation
   computePressure() {
-    for (let i = 0; i < this.P.numFluidParticles; i++) {
-      this.densities[i] = Math.max(this.densities[i], this.P.density0);
-      this.pressures[i] =
-        this.P.stiffness *
-        (Math.pow(this.densities[i] / this.P.density0, this.P.exponent) - 1.0);
+    const numFluid = this.P.numFluidParticles;
+    const density0 = this.P.density0;
+    const stiffness = this.P.stiffness;
+    const exponent = this.P.exponent;
+    const densities = this.densities;
+    const pressures = this.pressures;
+
+    for (let i = 0; i < numFluid; i++) {
+      densities[i] = Math.max(densities[i], density0);
+      pressures[i] =
+        stiffness * (Math.pow(densities[i] / density0, exponent) - 1.0);
     }
   }
 
   // compute accelerations caused by pressure forces
   computePressureAccelerations() {
-    for (let i = 0; i < this.P.numFluidParticles; i++) {
-      let dpi = this.pressures[i] / (this.densities[i] * this.densities[i]);
+    const numFluid = this.P.numFluidParticles;
+    const mass = this.P.mass;
+    const pressures = this.pressures;
+    const densities = this.densities;
+    const accs_x = this.accs_x;
+    const accs_y = this.accs_y;
+    const psi = this.psi;
 
-      let nl = this.neighbors[i].size;
+    for (let i = 0; i < numFluid; i++) {
+      const density_i = densities[i];
+      const dpi = pressures[i] / (density_i * density_i);
+      const neighborList = this.neighbors[i];
+      const nl = neighborList.size;
+      const ids = neighborList.ids;
+      const dists = neighborList.dist;
+      const dxs = neighborList.dx;
+      const dys = neighborList.dy;
+
       for (let j = 0; j < nl; j++) {
-        let nj = this.neighbors[i].ids[j];
-        if (i === nj) continue;
-
-        let dx = this.ps_x[i] - this.ps_x[nj];
-        let dy = this.ps_y[i] - this.ps_y[nj];
+        const nj = ids[j];
+        const dx = dxs[j];
+        const dy = dys[j];
+        const r = dists[j];
         // compute grad W (xi-xj)
-        let gradW = this.cubicKernel2D_Gradient(dx, dy);
+        const gradW = this.cubicKernel2D_Gradient(dx, dy, r);
 
         // Fluid
-        if (nj < this.P.numFluidParticles) {
-          let dpj =
-            this.pressures[nj] / (this.densities[nj] * this.densities[nj]);
-          this.accs_x[i] -= this.P.mass * (dpi + dpj) * gradW[0];
-          this.accs_y[i] -= this.P.mass * (dpi + dpj) * gradW[1];
+        if (nj < numFluid) {
+          const density_j = densities[nj];
+          const dpj = pressures[nj] / (density_j * density_j);
+          const factor = mass * (dpi + dpj);
+          accs_x[i] -= factor * gradW[0];
+          accs_y[i] -= factor * gradW[1];
         } else {
           // Boundary
-          this.accs_x[i] -= this.psi[nj] * dpi * gradW[0];
-          this.accs_y[i] -= this.psi[nj] * dpi * gradW[1];
+          const factor = psi[nj] * dpi;
+          accs_x[i] -= factor * gradW[0];
+          accs_y[i] -= factor * gradW[1];
         }
       }
     }
@@ -267,64 +326,145 @@ class System {
 
   // compute the viscosity forces (XSPH) for all particles
   computeViscosity() {
-    for (let i = 0; i < this.P.numFluidParticles; i++) {
-      let nl = this.neighbors[i].size;
+    const numFluid = this.P.numFluidParticles;
+    const mass = this.P.mass;
+    const timeStepSize = this.P.timeStepSize;
+    const viscosity = this.P.viscosity;
+    const vs_x = this.vs_x;
+    const vs_y = this.vs_y;
+    const densities = this.densities;
+    const accs_x = this.accs_x;
+    const accs_y = this.accs_y;
+    const invTimeStep = 1.0 / timeStepSize;
+
+    for (let i = 0; i < numFluid; i++) {
+      const vi_x = vs_x[i];
+      const vi_y = vs_y[i];
+      const neighborList = this.neighbors[i];
+      const nl = neighborList.size;
+      const ids = neighborList.ids;
+      const dists = neighborList.dist;
+
       for (let j = 0; j < nl; j++) {
-        let nj = this.neighbors[i].ids[j];
-        if (i === nj) continue;
-
+        const nj = ids[j];
         // Only apply viscosity between fluid particles
-        if (nj < this.P.numFluidParticles) {
-          let vi_vj_x = this.vs_x[i] - this.vs_x[nj];
-          let vi_vj_y = this.vs_y[i] - this.vs_y[nj];
-          let dx = this.ps_x[i] - this.ps_x[nj];
-          let dy = this.ps_y[i] - this.ps_y[nj];
+        if (nj < numFluid) {
+          const vi_vj_x = vi_x - vs_x[nj];
+          const vi_vj_y = vi_y - vs_y[nj];
           // compute W (xi-xj)
-          let Wij = this.cubicKernel2D(norm(dx, dy));
+          const Wij = this.cubicKernel2D(dists[j]);
 
-          let factor =
-            (this.P.mass / this.densities[nj]) *
-            (1.0 / this.P.timeStepSize) *
-            this.P.viscosity *
-            Wij;
-          this.accs_x[i] -= factor * vi_vj_x;
-          this.accs_y[i] -= factor * vi_vj_y;
+          const factor = (mass / densities[nj]) * invTimeStep * viscosity * Wij;
+          accs_x[i] -= factor * vi_vj_x;
+          accs_y[i] -= factor * vi_vj_y;
         }
+      }
+    }
+  }
+
+  // apply mouse force to particles within mouse radius
+  applyMouseForce(mouse_x, mouse_y, v_mouse_x, v_mouse_y) {
+    const numFluid = this.P.numFluidParticles;
+    const mouseRadius = this.P.mouseRadius;
+    const mouseForce = this.P.mouseForce;
+    const mouseRadius2 = mouseRadius * mouseRadius;
+    const ps_x = this.ps_x;
+    const ps_y = this.ps_y;
+    const vs_x = this.vs_x;
+    const vs_y = this.vs_y;
+
+    for (let i = 0; i < numFluid; i++) {
+      const dx = ps_x[i] - mouse_x;
+      const dy = ps_y[i] - mouse_y;
+      const dist2 = dx * dx + dy * dy;
+
+      if (dist2 < mouseRadius2) {
+        const dist = Math.sqrt(dist2);
+        if (dist > 1e-6) {
+          // Apply repulsive force away from mouse
+          const force = mouseForce * (1.0 - dist / mouseRadius);
+          const fx = -(dx / dist) * force;
+          const fy = -(dy / dist) * force;
+          //   ps_x[i] += v_mouse_x;
+          //   ps_y[i] += v_mouse_y;
+          // Add velocity impulse
+          vs_x[i] += fx * this.P.timeStepSize;
+          vs_y[i] += fy * this.P.timeStepSize;
+        }
+      }
+    }
+  }
+
+  applyMouseVelocity(mouse_x, mouse_y, v_mouse_x, v_mouse_y) {
+    const numFluid = this.P.numFluidParticles;
+    const mouseRadius = this.P.mouseRadius;
+    const mouseForce = this.P.mouseForce;
+    const mouseRadius2 = mouseRadius * mouseRadius;
+    const ps_x = this.ps_x;
+    const ps_y = this.ps_y;
+
+    for (let i = 0; i < numFluid; i++) {
+      const dx = ps_x[i] - mouse_x;
+      const dy = ps_y[i] - mouse_y;
+      const dist2 = dx * dx + dy * dy;
+
+      if (dist2 < mouseRadius2) {
+        ps_x[i] += v_mouse_x;
+        ps_y[i] += v_mouse_y;
       }
     }
   }
 
   // perform time integration using the symplectic Euler method
   symplecticEuler() {
-    let dt = this.P.timeStepSize;
+    const dt = this.P.timeStepSize;
+    const numFluid = this.P.numFluidParticles;
+    const particleRadius = this.P.particleRadius;
+    const width = this.P.width;
+    const height = this.P.height;
+    const maxX = width - particleRadius;
+    const maxY = height - particleRadius;
+    const ps_x = this.ps_x;
+    const ps_y = this.ps_y;
+    const vs_x = this.vs_x;
+    const vs_y = this.vs_y;
+    const accs_x = this.accs_x;
+    const accs_y = this.accs_y;
+    let max_vel = 100.0;
     // symplectic Euler step
-    let i;
-    for (i = 0; i < this.P.numFluidParticles; i++) {
+    for (let i = 0; i < numFluid; i++) {
       // integrate velocity considering gravitational acceleration
-      this.vs_x[i] = this.vs_x[i] + dt * this.accs_x[i];
-      this.vs_y[i] = this.vs_y[i] + dt * this.accs_y[i];
+      let vx = vs_x[i] + dt * accs_x[i];
+      let vy = vs_y[i] + dt * accs_y[i];
+      //clamp vx and vy to max_vel
+      vx = Math.max(Math.min(vx, max_vel), -max_vel);
+      vy = Math.max(Math.min(vy, max_vel), -max_vel);
 
       // integrate position
-      this.ps_x[i] = this.ps_x[i] + dt * this.vs_x[i];
-      this.ps_y[i] = this.ps_y[i] + dt * this.vs_y[i];
+      let px = ps_x[i] + dt * vx;
+      let py = ps_y[i] + dt * vy;
 
       // boundary conditions
-      if (this.ps_x[i] < this.P.particleRadius) {
-        this.ps_x[i] = this.P.particleRadius;
-        this.vs_x[i] *= -0.5;
+      if (px < particleRadius) {
+        px = particleRadius;
+        vx *= -0.5;
+      } else if (px > maxX) {
+        px = maxX;
+        vx *= -0.5;
       }
-      if (this.ps_x[i] > this.P.width - this.P.particleRadius) {
-        this.ps_x[i] = this.P.width - this.P.particleRadius;
-        this.vs_x[i] *= -0.5;
+
+      if (py < particleRadius) {
+        py = particleRadius;
+        vy *= -0.5;
+      } else if (py > maxY - this.P.floor) {
+        py = maxY - this.P.floor;
+        vy *= -0.5;
       }
-      if (this.ps_y[i] < this.P.particleRadius) {
-        this.ps_y[i] = this.P.particleRadius;
-        this.vs_y[i] *= -0.5;
-      }
-      if (this.ps_y[i] > this.P.height - this.P.particleRadius) {
-        this.ps_y[i] = this.P.height - this.P.particleRadius;
-        this.vs_y[i] *= -0.5;
-      }
+
+      ps_x[i] = px;
+      ps_y[i] = py;
+      vs_x[i] = vx;
+      vs_y[i] = vy;
     }
   }
   init() {
@@ -346,10 +486,12 @@ class System {
     this.densities = new Float32Array(totalParticles); // densities
     this.pressures = new Float32Array(totalParticles); // pressures
     this.psi = new Float32Array(totalParticles); // pseudo mass for boundary particles
-    this.is_movable = new Array(totalParticles).fill(true);
     this.neighbors = Array.from({ length: totalParticles }, () => ({
       size: 0,
       ids: new Int32Array(this.P.maxNeighbors),
+      dist: new Float32Array(this.P.maxNeighbors),
+      dx: new Float32Array(this.P.maxNeighbors),
+      dy: new Float32Array(this.P.maxNeighbors),
     }));
 
     this.numBoundaryParticles = numBoundaryParticles;
@@ -368,22 +510,27 @@ class System {
 
     // Initialize fluid particles first
     let index = 0;
-    let n = Math.ceil(Math.sqrt(this.P.numFluidParticles));
-    let spacing = d;
-    let offsetX = (this.P.width - (n - 1) * spacing) / 2.0;
-    let offsetY = (this.P.height - (n - 1) * spacing) / 2.0;
+    let d_2 = this.P.particleRadius * 1.6;
 
-    for (let i = 0; i < this.P.numFluidParticles; i++) {
-      let row = Math.floor(i / n);
-      let col = i % n;
-      this.ps_x[index] = offsetX + col * spacing;
-      this.ps_y[index] = offsetY + row * spacing;
-      this.vs_x[index] = 0.0;
-      this.vs_y[index] = 0.0;
-      this.accs_x[index] = 0.0;
-      this.accs_y[index] = 0.0;
-      this.is_movable[index] = true;
-      index++;
+    const startY = this.P.height * 0.05;
+    const endY = this.P.height * 0.95 - this.P.floor;
+    const n_in_column = Math.floor((endY - startY) / d_2);
+    const n_columns = Math.ceil(this.P.numFluidParticles / n_in_column);
+    const startX = this.P.width * 0.01;
+    const endX = startX + n_columns * d_2;
+    index = 0;
+
+    for (let j = 0; j < n_in_column; j++) {
+      for (let i = 0; i < n_columns; i++) {
+        if (index >= this.P.numFluidParticles) break;
+        this.ps_x[index] = startX + i * d_2;
+        this.ps_y[index] = startY + j * d_2;
+        this.vs_x[index] = 0.0;
+        this.vs_y[index] = 0.0;
+        this.accs_x[index] = 0.0;
+        this.accs_y[index] = 0.0;
+        index++;
+      }
     }
 
     // Initialize boundary particles (box around the simulation area)
@@ -395,19 +542,17 @@ class System {
       this.vs_y[index] = 0.0;
       this.accs_x[index] = 0.0;
       this.accs_y[index] = 0.0;
-      this.is_movable[index] = false;
       index++;
     }
 
     // Top boundary
     for (let j = 0; j < numBoundaryParticlesPerWidth; j++) {
       this.ps_x[index] = j * d;
-      this.ps_y[index] = (numBoundaryParticlesPerHeight - 1) * d;
+      this.ps_y[index] = (numBoundaryParticlesPerHeight - 1) * d - this.P.floor;
       this.vs_x[index] = 0.0;
       this.vs_y[index] = 0.0;
       this.accs_x[index] = 0.0;
       this.accs_y[index] = 0.0;
-      this.is_movable[index] = false;
       index++;
     }
 
@@ -419,7 +564,6 @@ class System {
       this.vs_y[index] = 0.0;
       this.accs_x[index] = 0.0;
       this.accs_y[index] = 0.0;
-      this.is_movable[index] = false;
       index++;
     }
 
@@ -431,28 +575,22 @@ class System {
       this.vs_y[index] = 0.0;
       this.accs_x[index] = 0.0;
       this.accs_y[index] = 0.0;
-      this.is_movable[index] = false;
       index++;
     }
 
     // Compute pseudo mass (psi) for boundary particles
-    // First, do a neighborhood search on boundary particles only
     this.neighborhoodSearch();
 
     for (let i = this.P.numFluidParticles; i < totalParticles; i++) {
       let delta = this.kernel_0;
 
-      //   for (let j = 0; j < this.neighbors[i].size; j++) {
-      // let nj = this.neighbors[i].ids[j];
-      // if (nj >= this.P.numFluidParticles) {
-      for (let nj = this.P.numFluidParticles; nj < totalParticles; nj++) {
-        if (i === nj) continue;
-        // Only consider other boundary particles
-        let dx = this.ps_x[i] - this.ps_x[nj];
-        let dy = this.ps_y[i] - this.ps_y[nj];
-        delta += this.cubicKernel2D(norm(dx, dy));
+      const neighborList = this.neighbors[i];
+      for (let j = 0; j < neighborList.size; j++) {
+        let nj = neighborList.ids[j];
+        if (nj >= this.P.numFluidParticles) {
+          delta += this.cubicKernel2D(neighborList.dist[j]);
+        }
       }
-      //   }
 
       // Pseudo mass is computed as (rest density) / sum_j W_ij
       this.psi[i] = this.P.density0 / delta;
@@ -462,11 +600,21 @@ class System {
 
 class Visualizer {
   constructor(system) {}
-  draw(p5, system) {
+  draw(p5, system, is_mouse, mouse_x, mouse_y) {
+    this.drawFloor(p5, system);
     this.drawPoint(p5, system);
+    this.drawMouseCircle(p5, system, is_mouse, mouse_x, mouse_y);
     this.fps(p5);
   }
+  drawFloor(p5, system) {
+    let lg = color_scheme.GROUND(p5);
+    p5.stroke(lg);
+    p5.fill(lg);
+    p5.rect(0, p5.height - system.P.floor, p5.width, system.P.floor);
+  }
   drawPoint(p5, system) {
+    p5.stroke(0);
+    p5.strokeWeight(0.5);
     // Draw fluid particles in blue
     p5.fill(0, 100, 255);
     for (let i = 0; i < system.P.numFluidParticles; i++) {
@@ -483,6 +631,15 @@ class Visualizer {
       p5.circle(x, y, system.P.particleRadius * 1.2);
     }
   }
+  drawMouseCircle(p5, system, is_mouse, mouse_x, mouse_y) {
+    if (is_mouse) {
+      p5.noFill();
+      p5.stroke(0, 0, 0, 100);
+      p5.strokeWeight(2);
+      p5.circle(mouse_x, mouse_y, system.P.mouseRadius * 2);
+      p5.noStroke();
+    }
+  }
   fps(p5) {
     p5.fill(255);
     p5.noStroke();
@@ -497,19 +654,71 @@ class Interface {
     this.system = new System();
     this.visualizer = new Visualizer(this.system);
     this.base_name = base_name;
+    this.iter_new_simul = -1;
   }
 
   iter(p5) {
-    // let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
-    // this.system.mouseLogic(is_mouse, mouse_x, mouse_y);
-    this.system.simulationStep();
-    this.visualizer.draw(p5, this.system);
+    let n_points_new = parseInt(this.slider2.value);
+    if (this.n_points != n_points_new) {
+      this.iter_new_simul = 8;
+      this.n_points = n_points_new;
+    }
+    if (this.iter_new_simul >= 0) {
+      this.iter_new_simul--;
+    }
+    if (this.iter_new_simul == 0) {
+      this.system.P.numFluidParticles = this.n_points;
+      this.system.init();
+    }
+
+    let [is_mouse, mouse_x, mouse_y] = ui_namespace.mouseLogic(p5);
+    let v_mouse_x = p5.mouseX - p5.pmouseX;
+    let v_mouse_y = p5.mouseY - p5.pmouseY;
+    this.system.simulationStep(
+      is_mouse,
+      mouse_x,
+      mouse_y,
+      v_mouse_x,
+      v_mouse_y
+    );
+    this.visualizer.draw(p5, this.system, is_mouse, mouse_x, mouse_y);
   }
   setup(p5, base_name) {
-    p5.setFrameRate(120);
+    p5.setFrameRate(30);
     this.system.P.width = p5.width;
     this.system.P.height = p5.height;
 
+    {
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "1",
+        "Viscosity"
+      );
+      this.slider1 = ui_namespace.createSlider(div_m_1, 0, 1, 100);
+      this.output1 = ui_namespace.createOutput(div_m_2);
+      this.output1.innerHTML = this.slider1.value;
+    }
+    this.slider1.oninput = function () {
+      this.output1.innerHTML = this.slider1.value;
+      this.system.P.viscosity = parseFloat(this.slider1.value);
+    }.bind(this);
+
+    {
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "2",
+        "Points"
+      );
+      this.slider2 = ui_namespace.createSlider(div_m_1, 0, 4000, 4000);
+      this.output2 = ui_namespace.createOutput(div_m_2);
+      this.output2.innerHTML = this.slider2.value;
+    }
+    this.slider2.oninput = function () {
+      this.output2.innerHTML = this.slider2.value;
+    }.bind(this);
+
+    this.n_points = this.slider2.value;
+    this.system.P.numFluidParticles = parseInt(this.n_points);
     this.system.init();
   }
   reset() {
