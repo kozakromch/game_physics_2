@@ -15,11 +15,12 @@ class parameters {
     this.timeStepSize = 0.01;
     this.stiffness = 30000;
     this.exponent = 7;
-    this.g = 10; // gravitational acceleration
+    this.g = 10.0;
     this.maxNeighbors = 200; // maximum number of neighbors per particle
     this.mouseRadius = 40.0; // radius of mouse interaction circle
     this.mouseForce = 1000.0; // strength of mouse interaction force
     this.floor = 10.0; // floor position
+    this.surfaceTension = 0.8;
   }
 }
 
@@ -184,13 +185,11 @@ class System {
       // Compute pressure values
       this.computePressure();
 
-      // compute accelerations caused by pressure forces
-      this.computePressureAccelerations();
+      // compute all force accelerations (pressure, viscosity, surface tension)
+      this.computeForceAccelerations();
       if (is_mouse) {
         this.applyMouseForce(mouse_x, mouse_y, v_mouse_x, v_mouse_y);
       }
-      // compute non-pressure forces
-      this.computeViscosity();
       // time integration
       this.symplecticEuler();
     }
@@ -279,8 +278,8 @@ class System {
     }
   }
 
-  // compute accelerations caused by pressure forces
-  computePressureAccelerations() {
+  // compute all force accelerations: pressure, viscosity, and surface tension
+  computeForceAccelerations() {
     const numFluid = this.P.numFluidParticles;
     const mass = this.P.mass;
     const pressures = this.pressures;
@@ -288,10 +287,18 @@ class System {
     const accs_x = this.accs_x;
     const accs_y = this.accs_y;
     const psi = this.psi;
+    const timeStepSize = this.P.timeStepSize;
+    const viscosity = this.P.viscosity;
+    const surfaceTension = this.P.surfaceTension;
+    const vs_x = this.vs_x;
+    const vs_y = this.vs_y;
+    const invTimeStep = 1.0 / timeStepSize;
 
     for (let i = 0; i < numFluid; i++) {
       const density_i = densities[i];
       const dpi = pressures[i] / (density_i * density_i);
+      const vi_x = vs_x[i];
+      const vi_y = vs_y[i];
       const neighborList = this.neighbors[i];
       const nl = neighborList.size;
       const ids = neighborList.ids;
@@ -304,59 +311,36 @@ class System {
         const dx = dxs[j];
         const dy = dys[j];
         const r = dists[j];
-        // compute grad W (xi-xj)
+        
+        // Compute kernel and gradient
+        const Wij = this.cubicKernel2D(r);
         const gradW = this.cubicKernel2D_Gradient(dx, dy, r);
 
-        // Fluid
+        // Pressure forces (fluid-fluid and fluid-boundary)
         if (nj < numFluid) {
+          // Fluid neighbor
           const density_j = densities[nj];
           const dpj = pressures[nj] / (density_j * density_j);
-          const factor = mass * (dpi + dpj);
-          accs_x[i] -= factor * gradW[0];
-          accs_y[i] -= factor * gradW[1];
-        } else {
-          // Boundary
-          const factor = psi[nj] * dpi;
-          accs_x[i] -= factor * gradW[0];
-          accs_y[i] -= factor * gradW[1];
-        }
-      }
-    }
-  }
+          const pressureFactor = mass * (dpi + dpj);
+          accs_x[i] -= pressureFactor * gradW[0];
+          accs_y[i] -= pressureFactor * gradW[1];
 
-  // compute the viscosity forces (XSPH) for all particles
-  computeViscosity() {
-    const numFluid = this.P.numFluidParticles;
-    const mass = this.P.mass;
-    const timeStepSize = this.P.timeStepSize;
-    const viscosity = this.P.viscosity;
-    const vs_x = this.vs_x;
-    const vs_y = this.vs_y;
-    const densities = this.densities;
-    const accs_x = this.accs_x;
-    const accs_y = this.accs_y;
-    const invTimeStep = 1.0 / timeStepSize;
-
-    for (let i = 0; i < numFluid; i++) {
-      const vi_x = vs_x[i];
-      const vi_y = vs_y[i];
-      const neighborList = this.neighbors[i];
-      const nl = neighborList.size;
-      const ids = neighborList.ids;
-      const dists = neighborList.dist;
-
-      for (let j = 0; j < nl; j++) {
-        const nj = ids[j];
-        // Only apply viscosity between fluid particles
-        if (nj < numFluid) {
+          // Viscosity forces (XSPH) - only between fluid particles
           const vi_vj_x = vi_x - vs_x[nj];
           const vi_vj_y = vi_y - vs_y[nj];
-          // compute W (xi-xj)
-          const Wij = this.cubicKernel2D(dists[j]);
+          const viscosityFactor = (mass / density_j) * invTimeStep * viscosity * Wij;
+          accs_x[i] -= viscosityFactor * vi_vj_x;
+          accs_y[i] -= viscosityFactor * vi_vj_y;
 
-          const factor = (mass / densities[nj]) * invTimeStep * viscosity * Wij;
-          accs_x[i] -= factor * vi_vj_x;
-          accs_y[i] -= factor * vi_vj_y;
+          // Surface tension - only between fluid particles
+          const tensionFactor = surfaceTension * Wij * r;
+          accs_x[i] -= tensionFactor;
+          accs_y[i] -= tensionFactor;
+        } else {
+          // Boundary neighbor - only pressure forces
+          const pressureFactor = psi[nj] * dpi;
+          accs_x[i] -= pressureFactor * gradW[0];
+          accs_y[i] -= pressureFactor * gradW[1];
         }
       }
     }
@@ -396,7 +380,6 @@ class System {
   applyMouseVelocity(mouse_x, mouse_y, v_mouse_x, v_mouse_y) {
     const numFluid = this.P.numFluidParticles;
     const mouseRadius = this.P.mouseRadius;
-    const mouseForce = this.P.mouseForce;
     const mouseRadius2 = mouseRadius * mouseRadius;
     const ps_x = this.ps_x;
     const ps_y = this.ps_y;
@@ -658,7 +641,7 @@ class Interface {
   }
 
   iter(p5) {
-    let n_points_new = parseInt(this.slider2.value);
+    let n_points_new = parseInt(this.slider3.value);
     if (this.n_points != n_points_new) {
       this.iter_new_simul = 8;
       this.n_points = n_points_new;
@@ -707,17 +690,32 @@ class Interface {
       let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
         this.base_name,
         "2",
-        "Points"
+        "Tension"
       );
-      this.slider2 = ui_namespace.createSlider(div_m_1, 0, 4000, 4000);
+      this.slider2 = ui_namespace.createSlider(div_m_1, 0, 10, 100);
       this.output2 = ui_namespace.createOutput(div_m_2);
       this.output2.innerHTML = this.slider2.value;
     }
     this.slider2.oninput = function () {
       this.output2.innerHTML = this.slider2.value;
+      this.system.P.surfaceTension = parseFloat(this.slider2.value);
     }.bind(this);
 
-    this.n_points = this.slider2.value;
+    {
+      let [div_m_1, div_m_2] = ui_namespace.createDivsForSlider(
+        this.base_name,
+        "3",
+        "Points"
+      );
+      this.slider3 = ui_namespace.createSlider(div_m_1, 0, 4000, 4000);
+      this.output3 = ui_namespace.createOutput(div_m_2);
+      this.output3.innerHTML = this.slider3.value;
+    }
+    this.slider3.oninput = function () {
+      this.output3.innerHTML = this.slider3.value;
+    }.bind(this);
+
+    this.n_points = this.slider3.value;
     this.system.P.numFluidParticles = parseInt(this.n_points);
     this.system.init();
   }
