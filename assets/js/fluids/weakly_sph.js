@@ -290,6 +290,7 @@ class System {
     const timeStepSize = this.P.timeStepSize;
     const viscosity = this.P.viscosity;
     const surfaceTension = this.P.surfaceTension;
+    const particleRadius = this.P.particleRadius;
     const vs_x = this.vs_x;
     const vs_y = this.vs_y;
     const invTimeStep = 1.0 / timeStepSize;
@@ -311,7 +312,7 @@ class System {
         const dx = dxs[j];
         const dy = dys[j];
         const r = dists[j];
-        
+
         // Compute kernel and gradient
         const Wij = this.cubicKernel2D(r);
         const gradW = this.cubicKernel2D_Gradient(dx, dy, r);
@@ -325,13 +326,24 @@ class System {
           accs_x[i] -= pressureFactor * gradW[0];
           accs_y[i] -= pressureFactor * gradW[1];
 
-          // Viscosity forces (XSPH) - only between fluid particles
+          // Viscosity forces
           const vi_vj_x = vi_x - vs_x[nj];
           const vi_vj_y = vi_y - vs_y[nj];
-          const viscosityFactor = (mass / density_j) * invTimeStep * viscosity * Wij;
-          accs_x[i] -= viscosityFactor * vi_vj_x;
-          accs_y[i] -= viscosityFactor * vi_vj_y;
-
+          const pi_pj_x = dx;
+          const pi_pj_y = dy;
+          const v_dot_dp = vi_vj_x * pi_pj_x + vi_vj_y * pi_pj_y;
+          // v * dp < 0
+          if (v_dot_dp < 0) {
+            const lambda =
+              -(mass * 2 * viscosity * particleRadius * 88.5) /
+              (density_i + density_j);
+            const viscosityFactor =
+              (lambda * v_dot_dp) /
+              (squaredNorm(dx, dy) +
+                0.01 * this.P.supportRadius * this.P.supportRadius);
+            accs_x[i] -= viscosityFactor * gradW[0];
+            accs_y[i] -= viscosityFactor * gradW[1];
+          }
           // Surface tension - only between fluid particles
           const tensionFactor = surfaceTension * Wij * r;
           accs_x[i] -= tensionFactor;
@@ -677,7 +689,7 @@ class Interface {
         "1",
         "Viscosity"
       );
-      this.slider1 = ui_namespace.createSlider(div_m_1, 0, 1, 100);
+      this.slider1 = ui_namespace.createSlider(div_m_1, 0, 10, 100);
       this.output1 = ui_namespace.createOutput(div_m_2);
       this.output1.innerHTML = this.slider1.value;
     }
